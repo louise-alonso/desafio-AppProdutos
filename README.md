@@ -1,63 +1,135 @@
-# 🎓 Desafio de Evolução do Projeto AppProdutos
+# 🛒 AppProdutos - API de E-commerce Segura
 
-Olá! Meu nome é **[Louise Afonso Lemos ALonso]** e este repositório contém o trabalho que desenvolvi como parte do desafio prático para evoluir o sistema **AppProdutos**.
-
-Este projeto visa aprofundar conhecimentos em **Spring Boot**, **Modelagem de Dados**, **Regras de Negócio**, **Autenticação (JWT/Spring Security)** e **Boas Práticas de Desenvolvimento Backend**.
+Este projeto é uma evolução de uma API REST básica de produtos. O objetivo principal é transformar um CRUD simples em uma aplicação de E-commerce robusta, implementando segurança avançada, regras de negócio complexas e boas práticas de arquitetura com Spring Boot.
 
 ---
 
-## 🎯 Requisitos Implementados
+## 🎯 O Desafio
 
-O projeto original (AppProdutos) foi expandido com as seguintes funcionalidades e melhorias, seguindo as diretrizes do desafio.
-
-### 1. Organização do Catálogo (Categorias)
-Implementação completa da funcionalidade de Categorias, permitindo a organização dos produtos.
-
-* ✅ **Entidade `Categoria`**: Criada com campos de auditoria (`createdAt`, `updatedAt`) e validação de unicidade (`nome`, `categoriaId`).
-* ✅ **DTOs Específicos**: Uso de `CategoriaRequest` e `CategoriaResponse` para controle de entrada e saída de dados.
-* ✅ **Mapeamento de Produto**: *(A ser implementado)* Associação de `Produtos` com a nova entidade `Categoria`.
-* ✅ **Endpoints de CRUD**: *(A ser implementado)* Controladores para criar, listar, atualizar e deletar categorias.
-
-### 2. Controle de Estoque/Inventário
-Revisão e expansão da entidade de Estoque, focando no controle de inventário.
-
-### 3. (Próxima Prioridade) Autenticação e Autorização (Spring Security/JWT)
-Baseado no exemplo `Login-BE`, a próxima fase será a implementação da segurança.
-
-* 🚧 **Configuração do Spring Security**: Configuração inicial para proteção de rotas.
-* 🚧 **Criação de Papéis (Roles)**: Implementação dos perfis `ADMIN`, `SELLER` e `CUSTOMER`.
-* 🚧 **Proteção de Endpoints**: Uso de `@PreAuthorize` nas rotas do `ProdutoController` e `CategoriaController`.
+O projeto original continha apenas um cadastro simples de produtos. O desafio consiste em escalar esta aplicação para suportar um fluxo real de vendas, focado em:
+1.  **Segurança:** Implementar autenticação e autorização do zero (JWT).
+2.  **Regras de Negócio:** Gestão de estoque, categorias e pedidos.
+3.  **Arquitetura:** Uso de DTOs, Services e tratamento de exceções.
+4.  **Testes:** Garantir a integridade dos dados e segurança dos endpoints.
 
 ---
 
-## 🛠️ Detalhes Técnicos e Boas Práticas
+## 🚀 Status do Projeto
 
-| Aspecto | Status / Implementação |
-| :--- | :--- |
-| **Linguagem/Framework** | Java 21 / Spring Boot 3.5.7 |
-| **Persistência** | Spring Data JPA |
-| **Banco de Dados** | H2 Database (em memória) |
-| **Modelagem** | Uso de **Java Records** (`ProdutoDto`) e DTOs dedicados. |
-| **Auditoria** | Uso de `@CreationTimestamp` e `@UpdateTimestamp` na entidade `Categoria`. |
-| **Build Tool** | Maven (`pom.xml` configurado) |
+### ✅ Funcionalidades Implementadas
+
+**1. Segurança e Autenticação (Spring Security + JWT)**
+* [x] Configuração do Spring Security (`SecurityConfig`) com proteção CSRF desabilitada para API.
+* [x] Autenticação Stateless via **Token JWT**.
+* [x] Criptografia de senhas com **BCrypt**.
+* [x] Controle de Acesso Baseado em Funções (**RBAC**):
+    * `ROLE_ADMIN`: Acesso total (criar/deletar usuários, categorias, produtos).
+    * `ROLE_USER`: Acesso de leitura (visualizar catálogo).
+* [x] Filtro de requisição customizado (`JwtRequestFilter`) para validação de token.
+
+**2. Gestão de Usuários**
+* [x] Cadastro de novos usuários (Endpoint protegido para Admin).
+* [x] Listagem de usuários.
+* [x] Exclusão de usuários.
+* [x] Validação de e-mail único no banco de dados.
+
+**3. Gestão de Categorias**
+* [x] Criar Categoria (Admin).
+* [x] Listar Categorias (Público/User).
+* [x] Deletar Categoria (Admin).
+
+**4. Banco de Dados**
+* [x] Configuração do **H2 Database** (em memória) para desenvolvimento rápido.
+* [x] Modelagem das tabelas `tbl_users` e `tbl_categorias`.
 
 ---
 
-## 📝 Contribuições e Versionamento
+### 📝 Próximos Passos (To-Do)
 
-Seguindo as sugestões, este desenvolvimento foi realizado adotando boas práticas de versionamento (Git Flow simplificado):
+O roadmap para finalizar a aplicação inclui:
 
-* **Branching**: Utilização de branches separadas para cada funcionalidade (`feature/categorias`, `fix/atualizacao-service`).
-* **Commits**: Mensagens claras e atômicas, refletindo a tarefa executada.
-* **[Opcional: Se for em equipe]** **Pull Requests**: Utilizados para revisão de código entre os membros da equipe antes do merge para `main`/`develop`.
+* [ ] **Produtos:** Associar Produtos a Categorias (Relacionamento `@ManyToOne`).
+* [ ] **Estoque:** Implementar controle de baixa de estoque e transações.
+* [ ] **Carrinho de Compras:** Permitir que o usuário adicione itens a um carrinho temporário.
+* [ ] **Pedidos (Orders):** Finalizar a compra e gerar um registro de pedido.
+* [ ] **Auditoria:** Registrar quem alterou o quê (Logs).
 
 ---
 
-## ⏭️ Próximos Passos no Desenvolvimento
+## 🛠️ Tecnologias Utilizadas
 
-1.  Finalizar o `CategoriaController` (CRUD) e o respectivo `CategoriaService`.
-2.  Associar `Produtos` com `Categoria`.
-3.  Iniciar a configuração do **Spring Security e JWT**.
-4.  Implementar o fluxo de **InventoryTransaction** (Transações de Estoque).
+* **Java 21**
+* **Spring Boot 3.x**
+    * Spring Web
+    * Spring Data JPA
+    * Spring Security
+* **H2 Database** (Banco em memória)
+* **JWT (JSON Web Token)** - Biblioteca `jjwt`
+* **Lombok**
+* **Maven**
 
-Qualquer feedback ou sugestão é bem-vindo!
+---
+
+## 🔌 Endpoints da API
+
+### 🔓 Público / Utilitários
+| Método | Rota | Descrição |
+| :--- | :--- | :--- |
+| `POST` | `/login` | Autentica o usuário e retorna o Token JWT. |
+| `POST` | `/encode` | Utilitário para gerar hash de senha (para testes). |
+| `GET` | `/h2-console` | Acesso ao banco de dados (Requer navegador). |
+
+### 👤 Usuário (ROLE_USER & ADMIN)
+| Método | Rota | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/categorias` | Lista todas as categorias disponíveis. |
+| `GET` | `/produtos` | (Em breve) Listar produtos. |
+
+### 🛡️ Administrativo (Apenas ROLE_ADMIN)
+| Método | Rota | Descrição |
+| :--- | :--- | :--- |
+| `POST` | `/admin/register` | Cria um novo usuário (Admin ou User). |
+| `GET` | `/admin/users` | Lista todos os usuários do sistema. |
+| `DELETE` | `/admin/users/{id}` | Remove um usuário. |
+| `POST` | `/admin/categorias` | Cria uma nova categoria. |
+| `DELETE` | `/admin/categorias/{id}`| Remove uma categoria. |
+
+---
+
+## ▶️ Como Rodar
+
+1.  Clone o repositório.
+2.  Execute o comando Maven para baixar as dependências:
+    ```bash
+    mvn clean install
+    ```
+3.  Rode a aplicação:
+    ```bash
+    mvn spring-boot:run
+    ```
+4.  **Configuração Inicial (H2):**
+    * Como o banco é em memória, ao iniciar, crie o primeiro ADMIN via SQL no `/h2-console` ou use o endpoint de setup (se implementado).
+    * Url JDBC: `jdbc:h2:mem:produtosdb`
+    * User: `sa`
+    * Password: (vazia)
+
+---
+
+## 🧪 Testes Realizados
+
+O sistema passou por cenários de teste manuais rigorosos via Postman:
+
+1.  ✅ **Autenticação:** Login com credenciais válidas gera Token JWT corretamente.
+2.  ✅ **Autorização (Sucesso):** Admin consegue acessar rotas protegidas e criar/deletar registros.
+3.  ✅ **Autorização (Falha/Segurança):** Usuário comum (`ROLE_USER`) recebe **403 Forbidden** ao tentar deletar ou criar usuários (Validado).
+4.  ✅ **Tratamento de Erro:** Tentativa de deletar registro inexistente retorna **404 Not Found** corretamente.
+5.  ✅ **Integridade:** Bloqueio de tokens adulterados ou falsos (403).
+6.  ✅ **Validação:** Bloqueio de cadastro de e-mails duplicados (400 Bad Request).
+
+---
+
+## 🧪 Como Testar
+
+Para um guia detalhado de como testar todos os cenários de segurança (Login, Bloqueio de Permissões, Criação de Usuários, etc.) utilizando o Postman e o H2 Console, consulte o meu manual de testes dedicado:
+
+👉 **[Clique aqui para ver o Guia de Testes (TESTING.md)](./TESTING.md)**
