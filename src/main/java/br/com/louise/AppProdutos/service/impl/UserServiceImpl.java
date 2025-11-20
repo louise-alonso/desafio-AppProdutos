@@ -1,7 +1,7 @@
 package br.com.louise.AppProdutos.service.impl;
 
-import br.com.louise.AppProdutos.dto.UserRequest;
-import br.com.louise.AppProdutos.dto.UserResponse;
+import br.com.louise.AppProdutos.dto.DTOUserRequest;
+import br.com.louise.AppProdutos.dto.DTOUserResponse;
 import br.com.louise.AppProdutos.model.UserEntity;
 import br.com.louise.AppProdutos.repository.UserRepository;
 import br.com.louise.AppProdutos.service.UserService;
@@ -23,14 +23,14 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public UserResponse createUser(UserRequest request) {
+    public DTOUserResponse createUser(DTOUserRequest request) {
         UserEntity newUser = convertToEntity(request);
         newUser = userRepository.save(newUser);
         return convertToResponse(newUser);
     }
 
-    private UserResponse convertToResponse(UserEntity newUser) {
-        return UserResponse.builder()
+    private DTOUserResponse convertToResponse(UserEntity newUser) {
+        return DTOUserResponse.builder()
                 .name(newUser.getName())
                 .userId(newUser.getUserId())
                 .email(newUser.getEmail())
@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    private UserEntity convertToEntity(UserRequest request) {
+    private UserEntity convertToEntity(DTOUserRequest request) {
         return UserEntity.builder()
                 .userId(UUID.randomUUID().toString())
                 .email(request.getEmail())
@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public List<UserResponse> readUsers() {
+    public List<DTOUserResponse> readUsers() {
         return userRepository.findAll()
                 .stream()
                 .map(user -> convertToResponse(user))

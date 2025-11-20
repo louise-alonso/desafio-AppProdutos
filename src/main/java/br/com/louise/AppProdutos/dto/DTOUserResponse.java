@@ -11,7 +11,7 @@ import java.sql.Timestamp;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserResponse {
+public class DTOUserResponse {
     
     private String userId;
     private String email;

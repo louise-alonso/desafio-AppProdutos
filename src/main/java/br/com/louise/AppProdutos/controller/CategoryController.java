@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException; 
 
-import br.com.louise.AppProdutos.dto.CategoryRequest;
-import br.com.louise.AppProdutos.dto.CategoryResponse;
+import br.com.louise.AppProdutos.dto.DTOCategoryRequest;
+import br.com.louise.AppProdutos.dto.DTOCategoryResponse;
 import br.com.louise.AppProdutos.service.CategoryService;
 
 
@@ -27,18 +27,18 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    @PostMapping ("/admin/categorias")
+    @PostMapping ("/admin/categories")
     @ResponseStatus(HttpStatus.CREATED)
-    public CategoryResponse addCategory(@RequestBody CategoryRequest request) {
+    public DTOCategoryResponse addCategory(@RequestBody DTOCategoryRequest request) {
         return categoryService.add(request);
     }
 
-    @GetMapping("/categorias")
-    public List<CategoryResponse> fetchCategories() {
+    @GetMapping("/categories")
+    public List<DTOCategoryResponse> fetchCategories() {
         return categoryService.read();
     }
 
-    @DeleteMapping("/admin/categorias/{categoryId}") 
+    @DeleteMapping("/admin/categories/{categoryId}") 
     @ResponseStatus(HttpStatus.NO_CONTENT) 
     public void deleteCategory(@PathVariable String categoryId) {
         try {

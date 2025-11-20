@@ -1,6 +1,9 @@
 package br.com.louise.AppProdutos.model;
 
+import jakarta.persistence.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -18,7 +21,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 @Entity
-@Table(name = "tbl_categorias") 
+@Table(name = "tbl_categories") 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -44,4 +47,12 @@ public class CategoryEntity {
 
     @UpdateTimestamp
     private Timestamp updatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parentId")
+    private CategoryEntity parent; // A categoria "Mãe"
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    private List<CategoryEntity> children = new ArrayList<>(); // As sub-categorias
+
 }

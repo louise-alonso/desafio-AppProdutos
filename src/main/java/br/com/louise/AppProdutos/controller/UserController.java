@@ -1,7 +1,7 @@
 package br.com.louise.AppProdutos.controller;
 
-import br.com.louise.AppProdutos.dto.UserRequest;
-import br.com.louise.AppProdutos.dto.UserResponse;
+import br.com.louise.AppProdutos.dto.DTOUserRequest;
+import br.com.louise.AppProdutos.dto.DTOUserResponse;
 import br.com.louise.AppProdutos.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,16 +21,16 @@ public class UserController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse registerUser(@RequestBody UserRequest userRequest) {
+    public DTOUserResponse registerUser(@RequestBody DTOUserRequest DTOUserRequest) {
         try {
-            return userService.createUser(userRequest);
+            return userService.createUser(DTOUserRequest);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to create user: " + e.getMessage());
         }
     }
 
     @GetMapping("/users")
-    public List<UserResponse> readUsers() {
+    public List<DTOUserResponse> readUsers() {
         return userService.readUsers();
     }
 

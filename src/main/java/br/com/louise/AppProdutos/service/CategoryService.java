@@ -2,14 +2,14 @@ package br.com.louise.AppProdutos.service;
 
 import java.util.List;
 
-import br.com.louise.AppProdutos.dto.CategoryRequest;
-import br.com.louise.AppProdutos.dto.CategoryResponse;
+import br.com.louise.AppProdutos.dto.DTOCategoryRequest;
+import br.com.louise.AppProdutos.dto.DTOCategoryResponse;
 
 public interface CategoryService {
     
-    CategoryResponse add(CategoryRequest request);
+    DTOCategoryResponse add(DTOCategoryRequest request);
 
-    List<CategoryResponse> read();
+    List<DTOCategoryResponse> read();
 
     void delete(String categoryId);
 }

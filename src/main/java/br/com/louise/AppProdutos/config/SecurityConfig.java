@@ -1,6 +1,8 @@
 package br.com.louise.AppProdutos.config;
 
 import br.com.louise.AppProdutos.filters.JwtRequestFilter;
+import br.com.louise.AppProdutos.service.impl.AppUserDetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,11 +16,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import br.com.louise.AppProdutos.service.impl.AppUserDetailsService;
-import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
@@ -37,19 +35,26 @@ public class SecurityConfig {
                 .headers(headers ->
                         headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
                 )
+
+                // define as regras de autorização das URLs
                 .authorizeHttpRequests(auth -> auth
+                        // endpoints públicos
                         .requestMatchers("/login").permitAll()
                         .requestMatchers("/encode").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers("/categorias").hasAnyRole("USER", "ADMIN")
+
+                        // endpoints protegidos por função (role)
+                        .requestMatchers("/categories").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                        // qualquer outra requisição precisa estar autenticada
                         .anyRequest().authenticated()
                 )
+
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
 
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -1,7 +1,7 @@
 package br.com.louise.AppProdutos.controller;
 
-import br.com.louise.AppProdutos.dto.AuthRequest;
-import br.com.louise.AppProdutos.dto.AuthResponse;
+import br.com.louise.AppProdutos.dto.DTOAuthRequest;
+import br.com.louise.AppProdutos.dto.DTOAuthResponse;
 import br.com.louise.AppProdutos.service.impl.AppUserDetailsService;
 import br.com.louise.AppProdutos.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,14 +29,15 @@ public class AuthController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody AuthRequest request) throws Exception {
+    public DTOAuthResponse login(@RequestBody DTOAuthRequest request) throws Exception {
+        // autenticação email e senha
         authenticate(request.getEmail(), request.getPassword());
-
         final UserDetails userDetails = appUserDetailsService.loadUserByUsername(request.getEmail());
+
         final String token = jwtUtil.generateToken(userDetails);
         final String role = userDetails.getAuthorities().iterator().next().getAuthority();
 
-        return AuthResponse.builder()
+        return DTOAuthResponse.builder()
                 .email(userDetails.getUsername())
                 .role(role)
                 .token(token)
@@ -45,6 +46,7 @@ public class AuthController {
 
     private void authenticate(String email, String password) throws Exception {
         try {
+            // verifica se as credenciais batem
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
         } catch (DisabledException e) {
             throw new DisabledException("Usuário desabilitado", e);

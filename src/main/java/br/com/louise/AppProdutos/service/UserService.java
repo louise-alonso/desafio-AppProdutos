@@ -1,20 +1,18 @@
 package br.com.louise.AppProdutos.service;
 
-import br.com.louise.AppProdutos.dto.UserRequest;
-import br.com.louise.AppProdutos.dto.UserResponse;
+import br.com.louise.AppProdutos.dto.DTOUserRequest;
+import br.com.louise.AppProdutos.dto.DTOUserResponse;
 
 import java.util.List;
 
 public interface UserService {
 
-
-    UserResponse createUser(UserRequest request);
+    DTOUserResponse createUser(DTOUserRequest request);
 
     String getUserRole(String email);
 
-    List<UserResponse> readUsers();
+    List<DTOUserResponse> readUsers();
 
     void deleteUser(String id);
-
 
 }

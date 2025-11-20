@@ -1,0 +1,57 @@
+package br.com.louise.AppProdutos.model;
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "tbl_products")
+@Data
+@Builder
+public class ProductEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false)
+    private String productId;
+
+    @Column(nullable = false)
+    private String name;
+
+    private String description;
+
+    @Column(nullable = false)
+    private BigDecimal price;
+
+    @Column(unique = true)
+    private String sku;
+
+    private BigDecimal costPrice;
+
+    private Integer stockQuantity;
+
+    @Builder.Default
+    private Boolean active = true;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private Timestamp createdAt;
+
+    @UpdateTimestamp
+    private Timestamp updatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name= "categoryId", nullable = false)
+    @OnDelete(action = OnDeleteAction.RESTRICT)
+    private CategoryEntity category;
+}

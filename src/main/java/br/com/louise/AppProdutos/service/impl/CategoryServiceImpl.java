@@ -4,11 +4,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import jakarta.persistence.EntityNotFoundException; 
+import br.com.louise.AppProdutos.repository.ProductRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
-import br.com.louise.AppProdutos.dto.CategoryRequest;
-import br.com.louise.AppProdutos.dto.CategoryResponse;
+import br.com.louise.AppProdutos.dto.DTOCategoryRequest;
+import br.com.louise.AppProdutos.dto.DTOCategoryResponse;
 
 import br.com.louise.AppProdutos.model.CategoryEntity;
 import br.com.louise.AppProdutos.repository.CategoryRepository;
@@ -20,45 +21,64 @@ import lombok.RequiredArgsConstructor;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
 
     @Override
-    public CategoryResponse add(CategoryRequest request) {
+    public DTOCategoryResponse add(DTOCategoryRequest request) {
+        // 1. Converte o DTO básico para Entidade
         CategoryEntity newCategory = convertToEntity(request);
+
+        // 2. Lógica de Hierarquia: Se tiver ID do pai, busca e associa
+        if (request.getParentId() != null && !request.getParentId().isEmpty()) {
+            CategoryEntity parentCategory = categoryRepository.findByCategoryId(request.getParentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Categoria Pai não encontrada com ID: " + request.getParentId()));
+
+            newCategory.setParent(parentCategory);
+        }
+
+        // 3. Salva no banco
         newCategory = categoryRepository.save(newCategory);
+
+        // 4. Retorna convertido
         return convertToResponse(newCategory);
     }
 
     @Override
-    public List<CategoryResponse> read() {
+    public List<DTOCategoryResponse> read() {
         return categoryRepository.findAll()
                 .stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
-    private CategoryEntity convertToEntity(CategoryRequest request) {
-        return CategoryEntity.builder()
-                .categoryId(UUID.randomUUID().toString())
-                .name(request.getNome()) 
-                .description(request.getDescricao()) 
-                .build();
-    }
-
     @Override
-    public void delete(String categoryId) { 
+    public void delete(String categoryId) {
         CategoryEntity existingCategory = categoryRepository.findByCategoryId(categoryId)
                 .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada com o id: " + categoryId));
 
         categoryRepository.delete(existingCategory);
     }
 
-    private CategoryResponse convertToResponse(CategoryEntity category) {
-        return CategoryResponse.builder()
-                .categoriaId(category.getCategoryId())
-                .nome(category.getName()) 
-                .descricao(category.getDescription()) 
+    private CategoryEntity convertToEntity(DTOCategoryRequest request) {
+        return CategoryEntity.builder()
+                .categoryId(UUID.randomUUID().toString())
+                .name(request.getName())
+                .description(request.getDescription())
+                .build();
+    }
+
+    private DTOCategoryResponse convertToResponse(CategoryEntity category) {
+        Integer productsCount = productRepository.countByCategoryId(category.getId());
+
+        return DTOCategoryResponse.builder()
+                .categoryId(category.getCategoryId())
+                .name(category.getName())
+                .description(category.getDescription())
                 .createdAt(category.getCreatedAt())
                 .updatedAt(category.getUpdatedAt())
+                .products(productsCount)
+                // Lógica para mostrar o nome do pai (se existir) ou null
+                .parentName(category.getParent() != null ? category.getParent().getName() : null)
                 .build();
     }
 }

@@ -9,8 +9,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthResponse {
+public class DTOUserRequest {
+
     private String email;
+    private String password;
+    private String name;
     private String role;
-    private String token;
+
+    
 }

@@ -7,10 +7,13 @@ import lombok.Data;
 
 @Data
 @Builder
-public class CategoryResponse {
-    private String categoriaId;
-    private String nome;
-    private String descricao;
+public class DTOCategoryResponse {
+    private String categoryId;
+    private String name;
+    private String description;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    private Integer products;
+
+    private String parentName;
 }
