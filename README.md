@@ -104,4 +104,5 @@ O foco agora é na implementação dos módulos transacionais (Vendas e Inventá
 ##  Guias
 
  **[Guia de Testes e Validação (TESTING.md)](./TESTING.md)**
+ 
  **[Guia de Referência da API (API.md)](./API.md)**
