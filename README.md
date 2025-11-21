@@ -101,9 +101,7 @@ O foco agora é na implementação dos módulos transacionais (Vendas e Inventá
 
 ---
 
-##  Testes e Qualidade
-
-Todos os endpoints e regras de segurança foram validados através de testes manuais. Detalhes completos sobre os cenários de teste (incluindo falhas de propriedade e violações de SKU) estão disponíveis no **Guia de Testes**.
+##  Guias
 
  **[Guia de Testes e Validação (TESTING.md)](./TESTING.md)**
  **[Guia de Referência da API (API.md)](./API.md)**
