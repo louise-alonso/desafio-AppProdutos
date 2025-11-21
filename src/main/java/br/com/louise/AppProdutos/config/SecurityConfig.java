@@ -5,6 +5,7 @@ import br.com.louise.AppProdutos.service.impl.AppUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -39,14 +40,13 @@ public class SecurityConfig {
                 // define as regras de autorização das URLs
                 .authorizeHttpRequests(auth -> auth
                         // endpoints públicos
-                        .requestMatchers("/login").permitAll()
-                        .requestMatchers("/encode").permitAll()
+                        .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers("/auth/encode").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/error").permitAll()
 
-                        // endpoints protegidos por função (role)
-                        .requestMatchers("/categories").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/categories").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/products").permitAll()
 
                         // qualquer outra requisição precisa estar autenticada
                         .anyRequest().authenticated()

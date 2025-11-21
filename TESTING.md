@@ -2,166 +2,109 @@
 
 Este documento descreve o roteiro passo a passo para validar a segurança, autenticação e regras de negócio da API.
 
-> **Pré-requisitos:**
-> * A aplicação deve estar rodando (`mvn spring-boot:run`).
-> * Ferramenta de API Client instalada (Postman ou Insomnia).
-> * Navegador Web (para acesso ao H2 Console).
+> **NOTA:** Estes testes cobrem cenários de **Regressão de Segurança (RBAC)** e **Regras de Negócio Críticas**, devendo ser executados a cada nova versão.
+
+**Pré-requisitos:**
+- Aplicação rodando (`mvn spring-boot:run`)
+- Postman, Insomnia ou outro API Client
 
 ---
 
-## 🔄 Ciclo 1: Configuração Inicial (Obrigatório a cada reinício)
+## Ciclo 1: Configuração Inicial e Autenticação
 
-Como o banco de dados H2 é em memória, ele inicia vazio. O primeiro passo é sempre criar o **Administrador**.
+### 1. Criar Usuário Admin no Banco
 
-### 1. Gerar Hash da Senha
-* **Rota:** `POST http://localhost:8080/encode`
-* **Body (JSON):** `{ "password": "senhaadmin" }`
-* **Ação:** Copie o hash gerado (ex: `$2a$10$...`). $2a$10$OVUbAwx3EWtYB5ckgFVBsuCVTfii.pMhzRPE/tC4yuvbwB14H5dOW
+**1.1 Obter HASH de Senha**  
+`POST /auth/encode`  
+Body: `{"password": "senhaadmin"}`  
+→ Copie o hash gerado.
 
-### 2. Inserir Admin no Banco de Dados
-* **Acesse:** `http://localhost:8080/h2-console` (Recomendado usar Janela Anônima).
-* **Login:** JDBC URL: `jdbc:h2:mem:produtosdb` | User: `sa` | Password: (vazia).
-* **SQL:** Cole e execute o comando abaixo (substituindo o hash):
-    ```sql
-    INSERT INTO tbl_users (user_id, name, email, password, role, created_at, updated_at) 
-    VALUES ('admin-01', 'Chefe Admin', 'admin@email.com', 'COLE_SEU_HASH_AQUI', 'ROLE_ADMIN', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-    ```
+**1.2 Inserir no H2 Console**  
+Use o hash para criar o Admin com `ROLE_ADMIN`.
 
 ---
 
-## 🔑 Ciclo 2: Testes de Autenticação (Login)
+### 2. Login e Criação de Perfis
 
-### 1. Login como Admin (Sucesso)
-* **Rota:** `POST http://localhost:8080/login`
-* **Body:**
-    ```json
-    { "email": "admin@email.com", "password": "senhaadmin" } eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBlbWFpbC5jb20iLCJyb2xlIjoiUk9MRV9BRE1JTiIsImV4cCI6MTc2MzY1NTA4OCwiaWF0IjoxNzYzNjUxNDg4fQ.QoiBN5oxw2-xPVr-nxEFpLj2nAt6eBAG6NpN_7bThb0
-    ```
-* **Resultado Esperado:** `200 OK`.
-* **Ação:** Copie o `token` retornado. Este será o **Token Admin**.
+**2.1 Token Admin**  
+`POST /auth/login`  
+→ Copie o **TOKEN_ADMIN**.
 
-### 2. Login com Senha Errada (Falha)
-* **Rota:** `POST http://localhost:8080/login`
-* **Body:** `{ "email": "admin@email.com", "password": "errada" }`
-* **Resultado Esperado:** `400 Bad Request` ou `401 Unauthorized`.
+**2.2 Criar Perfis**  
+Usando o **TOKEN_ADMIN**:
+- Crie `ROLE_SELLER`
+- Crie `ROLE_CUSTOMER`
 
----
+**2.3 Obter Tokens Individuais**  
+Faça login como SELLER e CUSTOMER.
 
-## 🛡️ Ciclo 3: Testes de Autorização (RBAC)
-
-### 1. Criar Usuário Comum (Apenas Admin pode)
-* **Rota:** `POST http://localhost:8080/admin/register`
-* **Header:** `Authorization: Bearer <TOKEN_DO_ADMIN>`
-* **Body:**
-    ```json
-    {
-      "name": "Funcionario João",
-      "email": "joao@empresa.com",
-      "password": "senha123",
-      "role": "ROLE_USER"
-    }
-    ```
-* **Resultado Esperado:** `201 Created`.
-
-### 2. Login como Usuário Comum
-* Faça o login (`POST /login`) com o email `joao@empresa.com` e senha `senha123`.
-* Copie o novo token. Este será o **Token User**. eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb2FvQGVtcHJlc2EuY29tIiwicm9sZSI6IlJPTEVfVVNFUiIsImV4cCI6MTc2MzY1NTI1NSwiaWF0IjoxNzYzNjUxNjU1fQ.Nd0P6YpKHlOUtdaImEIKz0mgON-pIYsaiFlO3NYqvdU
-
-### 3. Tentar Criar Usuário sendo Comum (Bloqueio de Segurança)
-* **Rota:** `POST http://localhost:8080/admin/register`
-* **Header:** `Authorization: Bearer <TOKEN_DO_USER>`
-* **Resultado Esperado:** `403 Forbidden`. (O sistema bloqueia corretamente usuários sem permissão de Admin).
+| Perfil | Permissão |
+|-------|-----------|
+| Admin | Total |
+| Seller | CRUD de produtos próprios |
+| Customer | Apenas leitura |
 
 ---
 
----
+##  Ciclo 2: Testes de Usuário e Segurança (CRUD Geral)
 
-## 📦 Ciclo 4: Catálogo e Produtos
+**Token necessário: ADMIN**
 
-### 1. Criar Categoria PAI (Eletrônicos)
-* **Rota:** `POST http://localhost:8080/admin/categorias`
-* **Header:** `Authorization: Bearer <TOKEN_DO_ADMIN>`
-* **Body:**
-    ```json
-    {
-        "name": "Eletrônicos",
-        "description": "Tudo que liga na tomada"
-    }
-    ```
-* **Resultado Esperado:** `201 Created`.
-* **Ação:** Copie o `categoryId` desta resposta (Ex: `e50b47a7...`).
-
-### 2. Criar Categoria FILHO (Hierarquia)
-* **Rota:** `POST http://localhost:8080/admin/categorias`
-* **Header:** `Authorization: Bearer <TOKEN_DO_ADMIN>`
-* **Body:** (Use o ID copiado acima no `parentId`)
-    ```json
-    {
-        "name": "Celulares",
-        "description": "Smartphones modernos",
-        "parentId": "COLE_O_UUID_DE_ELETRONICOS_AQUI"
-    }
-    ```
-* **Resultado Esperado:** `201 Created`. Verifique se no JSON aparece `"parentName": "Eletrônicos"`.
-* **Ação:** Copie o `categoryId` desta categoria filha (Ex: `uuid-filho-222`).
-
-### 3. Criar Produto Completo (Com SKU e Estoque)
-* **Rota:** `POST http://localhost:8080/admin/products`
-* **Header:** `Authorization: Bearer <TOKEN_DO_ADMIN>`
-* **Body:** (Use o ID da categoria "Celulares")
-    ```json
-    {
-        "name": "iPhone 15 Pro Max",
-        "description": "Titânio Natural, 256GB",
-        "price": 9500.00,
-        "sku": "IP15-PRO-MAX-TIT",
-        "costPrice": 7000.00,
-        "stockQuantity": 10,
-        "categoryId": "COLE_O_UUID_DE_CELULARES_AQUI"
-    }
-    ```
-* **Resultado Esperado:** `201 Created`.
-
-### 4. Testar Validação de SKU Duplicado (Erro Esperado)
-* **Ação:** Tente criar um produto diferente usando o **mesmo SKU** do passo anterior (`IP15-PRO-MAX-TIT`).
-* **Rota:** `POST http://localhost:8080/admin/products`
-* **Resultado Esperado:** `400 Bad Request` com mensagem de erro sobre SKU duplicado.
-
-### 5. Listar Produtos (Verificação Final)
-* **Rota:** `GET http://localhost:8080/products`
-* **Header:** Use Token de Admin ou User.
-* **Resultado Esperado:** `200 OK`. Verifique se o produto aparece com os campos novos (`sku`, `stockQuantity`) e o nome da categoria correto.
-
-
-### 6. Tentar Deletar Categoria sendo Comum (Bloqueio de Segurança)
-* **Ação:** Faça login como `ROLE_USER` (crie um se não tiver) e use o **Token User**.
-* **Rota:** `DELETE http://localhost:8080/admin/categorias/1`
-* **Header:** `Authorization: Bearer <TOKEN_DO_USER>`
-* **Resultado Esperado:** `403 Forbidden`.
-
-### 7. Acessar Rota Pública/Comum (Leitura)
-* **Rota:** `GET http://localhost:8080/categorias`
-* **Header:** `Authorization: Bearer <TOKEN_DO_USER>`
-* **Resultado Esperado:** `200 OK`. (Usuários comuns têm permissão de leitura).
+| Ação | Rota | Cenário | Esperado | Regra |
+|------|------|----------|-----------|--------|
+| Criar usuário | POST /admin/register | Criar SELLER | 201 | Criação liberada |
+| Listar usuários | GET /admin/users | Listar todos | 200 | Admin pode listar |
+| Atualizar | PUT /admin/users/{id} | Trocar role | 200 | PUT funcionando |
+| Atualizar (negativo) | PUT /admin/users/{id} | E-mail duplicado | 400 | E-mail único |
+| Deletar | DELETE /admin/users/{id} | Remoção | 204 | DELETE funcionando |
 
 ---
 
-## 🧪 Ciclo 5: Validações e Integridade
+##  Ciclo 3: Testes de Categoria (Integridade e Estrutura)
 
-### 1. Cadastro de Email Duplicado
-* Tente criar um usuário com o mesmo email (`joao@empresa.com`) usando o **Token Admin**.
-* **Resultado Esperado:** `400 Bad Request` (A aplicação impede duplicação).
+**Token necessário: ADMIN**
 
-### 2. Token Adulterado (Hacker)
-* Pegue um token válido. Altere manualmente um caractere no meio dele.
-* Tente fazer qualquer requisição autenticada.
-* **Resultado Esperado:** `403 Forbidden` (A assinatura digital do token falhou).
+| Ação | Rota | Cenário | Esperado | Regra |
+|------|------|----------|-----------|--------|
+| Criar categoria | POST /admin/categories | Criar raiz "Eletrônicos" | 201 | Nó raiz válido |
+| Atualizar | PUT /admin/categories/{id} | Alterar nome/descrição | 200 | PUT funcionando |
+| Bloqueio hierarquia | POST /admin/categories | Enviar `parentId` | 400 | Catálogo plano |
+| Bloqueio delete | DELETE /admin/categories/{id} | Categoria com produtos | 400 | Integridade FK |
+| Self-parenting | PUT /admin/categories/{id} | Categoria apontando para si mesma | 400 | Proibir loops |
 
 ---
 
-## 🧹 Limpeza (Opcional)
+## Ciclo 4: Testes de Produto e Propriedade
 
-### Deletar Usuário
-* **Rota:** `DELETE http://localhost:8080/admin/users/{id}` (Use o ID do João).
-* **Header:** `Authorization: Bearer <TOKEN_DO_ADMIN>`
-* **Resultado Esperado:** `204 No Content`.
+**Setup:**
+- Seller 1 cria produto (P1).
+- Seller 2 tenta operações restritas.
+
+| Ação | Rota | Token | Cenário | Esperado | Regra |
+|------|------|--------|----------|-----------|---------|
+| Criar produto | POST /admin/products | SELLER 1 | Criar P1 | 201 | Seller pode criar |
+| SKU duplicado | POST /admin/products | ADMIN | SKU já usado | 400 | SKU único |
+| Atualizar (negativo) | PUT /admin/products/{id} | SELLER 2 | Alterar P1 | 403 | Owner lock |
+| Atualizar (positivo) | PUT /admin/products/{id} | SELLER 1 | Alterar preço | 200 | Dono pode editar |
+| Deletar | DELETE /admin/products/{id} | ADMIN | Remover P1 | 204 | Admin pode tudo |
+
+---
+
+## Ciclo 5: Testes do Perfil CUSTOMER
+
+**Token necessário: CUSTOMER**
+
+| Ação | Rota | Esperado | Regra |
+|------|------|-----------|--------|
+| Ler catálogo | GET /products | 200 | Leitura liberada |
+| Bloqueio CRUD | POST /admin/products | 403 | Customer não cria |
+| Bloqueio admin | GET /admin/users | 403 | Sem acesso a /admin |
+
+---
+
+## Ciclo 6: Testes Finais de Segurança
+
+| Ação | Cenário | Esperado |
+|------|----------|-----------|
+| Token adulterado | Token inválido | 403 Forbidden |
+| Login inválido | Senha errada | 400 Bad Request |

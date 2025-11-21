@@ -50,8 +50,13 @@ public class ProductEntity {
     @UpdateTimestamp
     private Timestamp updatedAt;
 
+    // relacionamento com Categoria
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name= "categoryId", nullable = false)
-    @OnDelete(action = OnDeleteAction.RESTRICT)
     private CategoryEntity category;
+
+    //dono do Produto
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ownerId", nullable = false)
+    private UserEntity owner;
 }

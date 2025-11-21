@@ -9,6 +9,10 @@ public interface CategoryService {
     
     DTOCategoryResponse add(DTOCategoryRequest request);
 
+    DTOCategoryResponse update(String categoryId, DTOCategoryRequest request);
+
+    DTOCategoryResponse readById(String categoryId);
+
     List<DTOCategoryResponse> read();
 
     void delete(String categoryId);

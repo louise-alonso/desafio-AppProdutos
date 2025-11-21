@@ -9,6 +9,8 @@ public interface UserService {
 
     DTOUserResponse createUser(DTOUserRequest request);
 
+    DTOUserResponse updateUser(String userId, DTOUserRequest request);
+
     String getUserRole(String email);
 
     List<DTOUserResponse> readUsers();

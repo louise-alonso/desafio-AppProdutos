@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 
 import br.com.louise.AppProdutos.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import br.com.louise.AppProdutos.dto.DTOCategoryRequest;
@@ -15,6 +17,7 @@ import br.com.louise.AppProdutos.model.CategoryEntity;
 import br.com.louise.AppProdutos.repository.CategoryRepository;
 import br.com.louise.AppProdutos.service.CategoryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -25,21 +28,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public DTOCategoryResponse add(DTOCategoryRequest request) {
-        // 1. Converte o DTO básico para Entidade
         CategoryEntity newCategory = convertToEntity(request);
 
-        // 2. Lógica de Hierarquia: Se tiver ID do pai, busca e associa
         if (request.getParentId() != null && !request.getParentId().isEmpty()) {
-            CategoryEntity parentCategory = categoryRepository.findByCategoryId(request.getParentId())
-                    .orElseThrow(() -> new EntityNotFoundException("Categoria Pai não encontrada com ID: " + request.getParentId()));
-
-            newCategory.setParent(parentCategory);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Esta aplicação não permite hierarquia entre categorias. A categoria deve ser um nó Raiz.");
         }
 
-        // 3. Salva no banco
         newCategory = categoryRepository.save(newCategory);
 
-        // 4. Retorna convertido
         return convertToResponse(newCategory);
     }
 
@@ -52,11 +48,27 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public DTOCategoryResponse readById(String categoryId) {
+        CategoryEntity existingCategory = categoryRepository.findByCategoryId(categoryId)
+                .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada com o id: " + categoryId));
+
+        return convertToResponse(existingCategory);
+    }
+
+    @Override
     public void delete(String categoryId) {
         CategoryEntity existingCategory = categoryRepository.findByCategoryId(categoryId)
                 .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada com o id: " + categoryId));
 
-        categoryRepository.delete(existingCategory);
+        try {
+            categoryRepository.delete(existingCategory);
+
+        } catch (DataIntegrityViolationException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Não é possível deletar. A categoria possui produtos ou subcategorias associadas."
+            );
+        }
     }
 
     private CategoryEntity convertToEntity(DTOCategoryRequest request) {
@@ -80,5 +92,21 @@ public class CategoryServiceImpl implements CategoryService {
                 // Lógica para mostrar o nome do pai (se existir) ou null
                 .parentName(category.getParent() != null ? category.getParent().getName() : null)
                 .build();
+    }
+
+    public DTOCategoryResponse update(String categoryId, DTOCategoryRequest request) {
+        CategoryEntity existingCategory = categoryRepository.findByCategoryId(categoryId)
+                .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada para atualização: " + categoryId));
+
+        if (request.getParentId() != null && !request.getParentId().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Esta aplicação não permite hierarquia entre categorias. O campo 'parentId' deve ser omitido.");
+        }
+
+        existingCategory.setName(request.getName());
+        existingCategory.setDescription(request.getDescription());
+
+        existingCategory = categoryRepository.save(existingCategory);
+
+        return convertToResponse(existingCategory);
     }
 }

@@ -1,112 +1,64 @@
-# 🛒 AppProdutos - E-commerce API (Evolution Project)
+# AppProdutos - E-commerce API (Evolution Project)
 
-Este projeto é a evolução de uma API REST de produtos, transformando-a em um sistema de E-commerce completo. O objetivo é aplicar conceitos avançados de **Java 21**, **Spring Boot 3**, **Segurança (JWT)** e **Regras de Negócio Complexas**.
-
-Projeto desenvolvido com base nos requisitos de evolução propostos no desafio acadêmico.
+Este projeto é a evolução de uma API REST de produtos, transformando-a em um sistema de E-commerce completo. O foco principal é a aplicação de conceitos avançados de **Java 21**, **Spring Boot 3**, **Segurança (JWT) com RBAC granular** e **Regras de Negócio Complexas**.
 
 ---
 
-## 🚀 Status do Desenvolvimento
+## Visão Geral e Arquitetura
 
-### ✅ Funcionalidades Já Implementadas (Done)
+O **AppProdutos** utiliza uma arquitetura em camadas e segue rigorosamente os princípios RESTful, com validação de dados e controle de acesso em nível de método.
 
-**1. Módulo de Autenticação & Segurança (Nível: Intermediário)**
-* [x] Implementação de **Spring Security** com configuração stateless.
-* [x] Autenticação via **Token JWT** (Geração e Validação via Filtro customizado).
-* [x] Criptografia de senhas com **BCrypt**.
-* [x] Controle de Acesso Baseado em Funções (**RBAC**) para rotas de `ADMIN` e `USER`.
-* [x] Correção de vulnerabilidades (CSRF desabilitado para API, proteção de endpoints sensíveis).
-* [x] Acesso seguro ao **H2 Console** em ambiente de desenvolvimento.
+### Tecnologias Principais
 
-**2. Módulo de Usuários**
-* [x] Cadastro de usuários com validação de e-mail único.
-* [x] Listagem e exclusão de usuários (Exclusivo Admin).
-* [x] Endpoint utilitário para hash de senhas (`/encode`).
-
-**3. Módulo de Categorias (Completo)**
-* [x] CRUD de Categorias.
-* [x] Validação de unicidade de nome.
-* [x] **Hierarquia de Categorias:** Implementação de auto-relacionamento (Categoria Pai/Filho) permitindo subcategorias.
-
-**4. Módulo de Produtos (Catálogo)**
-* [x] CRUD de Produtos.
-* [x] **Relacionamento:** Associação de Produto com Categoria (`@ManyToOne`).
-* [x] **Novos Campos:** Implementação de `sku` (código único), `costPrice`, `stockQuantity` e `active`.
-* [x] **Validações:** Bloqueio de cadastro de produtos com SKU duplicado.
+| Categoria | Tecnologia | Versão | Notas |
+| :--- | :--- | :--- | :--- |
+| **Linguagem** | Java | 21 | Foco em features modernas da linguagem. |
+| **Framework** | Spring Boot | 3.5.7 | Utilizando as especificações Jakarta EE. |
+| **Segurança** | Spring Security + JWT | 3.x / 0.9.1 | Controle de acesso via `@PreAuthorize`. |
+| **Persistência** | Spring Data JPA | N/A | Abstração da camada de dados. |
+| **Banco de Dados** | H2 Database | N/A | Banco em memória para ambiente de desenvolvimento. |
 
 ---
 
-## 📋 Roadmap de Evolução (Próximos Passos)
+## Status do Desenvolvimento (Core Business Logic)
 
-Baseado nos requisitos do desafio, estas são as próximas implementações priorizadas:
+### Funcionalidades Implementadas
 
-### 🚧 Prioridade 1: Estoque e Transações
-* [ ] **Transações de Inventário:** Criar entidade `InventoryTransaction` para registrar histórico de entradas, saídas, ajustes e devoluções.
-* [ ] **Regra de Negócio:** Impedir vendas com estoque insuficiente.
-* [ ] Atualizar quantidade automaticamente ao confirmar pedido.
-
-### 🚧 Prioridade 2: Fluxo de Vendas
-* [ ] **Carrinho de Compras:** Implementar carrinho persistente por usuário (Redis ou Banco) com `priceSnapshot`.
-* [ ] **Pedidos (Orders) e avaliações:** Fluxo de checkout (Carrinho -> Pedido) com status (`CREATED`, `PAID`, `SHIPPED`, `DELIVERED`, `CANCELLED`).
-
-### 🔮 Futuro (Bônus)
-* [ ] **Promoções e Cupons:** Lógica de desconto percentual/fixo e validade.
-* [ ] **Auditoria:** Logar quem alterou o quê (Entity Listeners).
-* [ ] **Relatórios:** Endpoints para métricas de vendas e estoque baixo.
-
----
-
-## 🛠️ Tecnologias e Arquitetura
-
-* **Linguagem:** Java 21
-* **Framework:** Spring Boot 3.5.7
-* **Banco de Dados:** H2 Database (Em memória)
-* **Segurança:** Spring Security + JJWT (0.9.1 Legacy adapter)
-* **Documentação:** SpringDoc OpenAPI (Swagger)
-* **Arquitetura:** Camadas (Controller -> Service -> Repository) com uso de DTOs (Data Transfer Objects).
-
----
-
-## ✅ Critérios de Aceite
-
-* [x] Endpoints sensíveis protegidos com roles.
-* [x] Código organizado (Controller, Service, Repository, DTO).
-* [x] Validações retornam mensagens claras (Ex: 400 Bad Request para e-mail ou SKU duplicados).
-* [ ] Testes unitários cobrindo regras principais (Pendente).
-* [ ] Tabelas criadas com migrations (Usando H2 auto-ddl por enquanto).
-* [ ] Configuração do Swagger: Habilitar e configurar o `springdoc-openapi` para documentação automática visual (`/swagger-ui.html`)(Pendente).
-
----
-
-## 🔌 Endpoints da API
-
-### 🔓 Público / Utilitários
-| Método | Rota | Descrição |
+| Módulo | Funcionalidade Chave | Regras de Negócio |
 | :--- | :--- | :--- |
-| `POST` | `/login` | Autentica o usuário e retorna o Token JWT. |
-| `POST` | `/encode` | Utilitário para gerar hash de senha (para testes). |
-| `GET` | `/h2-console` | Acesso ao banco de dados (Requer navegador). |
+| **Segurança & RBAC** | Implementação **Stateless** com JWT e BCrypt. | **Três Perfis:** `ADMIN`, `SELLER`, `CUSTOMER`. Controle de acesso por propriedade (`isOwner`). |
+| **Módulo Usuários** | CRUD Completo de Usuários (`/admin/users`). | Validação de e-mail único. |
+| **Módulo Categorias** | CRUD Completo de Categorias. | **Hierarquia Plana Crítica:** Proibição de associação Pai/Filho entre categorias. |
+| **Módulo Produtos** | CRUD Completo de Produtos (`/admin/products`). | Bloqueio de **SKU Duplicado**. Produto obrigatoriamente associado a uma Categoria e um Proprietário. |
 
-### 👤 Usuário (ROLE_USER & ADMIN)
-| Método | Rota | Descrição |
-| :--- | :--- | :--- |
-| `GET` | `/categorias` | Lista todas as categorias (com indicação de hierarquia). |
-| `GET` | `/products` | Lista todos os produtos do catálogo. |
+### Perfis de Usuário e Permissões
 
-### 🛡️ Administrativo (Apenas ROLE_ADMIN)
-| Método | Rota | Descrição |
+| Perfil | Role | Permissão Chave |
 | :--- | :--- | :--- |
-| `POST` | `/admin/register` | Cria um novo usuário (Admin ou User). |
-| `GET` | `/admin/users` | Lista todos os usuários do sistema. |
-| `DELETE` | `/admin/users/{id}` | Remove um usuário. |
-| `POST` | `/admin/categorias` | Cria uma nova categoria (suporta `parentId`). |
-| `DELETE` | `/admin/categorias/{id}`| Remove uma categoria. |
-| `POST` | `/admin/products` | Cadastra um novo produto (com SKU e Estoque). |
-| `DELETE` | `/admin/products/{id}`| Remove um produto. |
+| **Administrador** | `ROLE_ADMIN` | Acesso total (CRUD) a todos os módulos (Usuário, Categoria, Produto, etc.). |
+| **Vendedor** | `ROLE_SELLER` | Acesso para Criar, Atualizar e Deletar **APENAS seus produtos** (Regra de Dono). |
+| **Cliente** | `ROLE_CUSTOMER` | Acesso somente a rotas de Leitura (Catálogo). |
 
 ---
 
-## ▶️ Como Rodar
+## Roadmap de Evolução (Próximos Passos)
+
+O foco agora é na implementação dos módulos transacionais (Vendas e Inventário).
+
+### Prioridade 1: Módulo de Transações e Estoque
+* [ ] Implementação da entidade **`InventoryTransaction`** (Histórico de Movimentação).
+* [ ] Regra: Impedir vendas com estoque insuficiente.
+* [ ] Atualização automática do `stockQuantity` após movimentação.
+
+### Prioridade 2: Módulo de Vendas e Pedidos
+* [ ] Implementação de **Carrinho de Compras** persistente por usuário.
+* [ ] Fluxo completo de **Pedidos (Orders)** com gestão de status (`PAID`, `SHIPPED`, etc.).
+
+---
+
+## Como Configurar e Rodar
+
+### 1. Configuração Local
 
 1.  Clone o repositório.
 2.  Execute o comando Maven para baixar as dependências:
@@ -117,31 +69,41 @@ Baseado nos requisitos do desafio, estas são as próximas implementações prio
     ```bash
     mvn spring-boot:run
     ```
-4.  **Configuração Inicial (H2):**
-    * Como o banco é em memória, ao iniciar, crie o primeiro ADMIN via SQL no `/h2-console` ou use o endpoint de setup (se implementado).
-    * Url JDBC: `jdbc:h2:mem:produtosdb`
-    * User: `sa`
-    * Password: (vazia)
+
+### 2. Acesso e Credenciais Iniciais
+
+* **Console do Banco:** Acesse `http://localhost:8080/h2-console`
+    * URL JDBC: `jdbc:h2:mem:produtosdb`
+    * User: `sa` / Password: (vazia)
+* **Primeiro Admin:** Use o endpoint `/auth/encode` para gerar o hash de `senhaadmin` e insira o usuário `admin@email.com` no H2 Console.
 
 ---
 
-## 🧪 Testes Realizados
+##  Endpoints Principais da API
 
-O sistema passou por cenários de teste manuais rigorosos via Postman:
+###  Módulo de Autenticação e Catálogo
 
-1.  ✅ **Autenticação:** Login com credenciais válidas gera Token JWT corretamente.
-2.  ✅ **Autorização (Sucesso):** Admin consegue acessar rotas protegidas e criar/deletar registros.
-3.  ✅ **Autorização (Falha/Segurança):** Usuário comum (`ROLE_USER`) recebe **403 Forbidden** ao tentar deletar ou criar usuários/produtos.
-4.  ✅ **Integridade:** Bloqueio de tokens adulterados ou falsos (403).
-5.  ✅ **Validação de Dados:**
-    * Bloqueio de cadastro de e-mails duplicados (400 Bad Request).
-    * Bloqueio de cadastro de **SKU duplicado** em produtos (400 Bad Request).
-6.  ✅ **Relacionamentos:** Criação bem sucedida de Categorias Pai/Filho e Produtos associados a Categorias.
+| Método | Rota | Acesso | Descrição |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/auth/login` | Público | Autenticação e emissão do Token JWT. |
+| `GET` | `/products` | Público | Lista todos os produtos (Catálogo). |
+| `GET` | `/categories` | Público | Lista todas as categorias. |
+| `GET` | `/products/{id}` | Público | Detalhes de um produto por ID. |
+
+###  Módulo de Gestão (Rotas Protegidas)
+
+| Recurso | Método | Rota | Permissões |
+| :--- | :--- | :--- | :--- |
+| **Usuário** | `POST` | `/admin/register` | `ROLE_ADMIN` |
+| **Produto** | `POST` | `/admin/products` | `ROLE_ADMIN`, `ROLE_SELLER` |
+| **Produto** | `PUT`/`DELETE` | `/admin/products/{id}` | `ROLE_ADMIN` **OU** Dono do Produto |
+| **Categoria** | `POST`/`PUT`/`DELETE` | `/admin/categories` | `ROLE_ADMIN` |
 
 ---
 
-## 🧪 Como Testar
+##  Testes e Qualidade
 
-Para um guia detalhado de como testar todos os cenários de segurança (Login, Bloqueio de Permissões, Criação de Usuários, etc.) utilizando o Postman e o H2 Console, consulte o manual de testes dedicado:
+Todos os endpoints e regras de segurança foram validados através de testes manuais. Detalhes completos sobre os cenários de teste (incluindo falhas de propriedade e violações de SKU) estão disponíveis no **Guia de Testes**.
 
-👉 **[Clique aqui para ver o Guia de Testes (TESTING.md)](./TESTING.md)**
+ **[Guia de Testes e Validação (TESTING.md)](./TESTING.md)**
+ **[Guia de Referência da API (API.md)](./API.md)**

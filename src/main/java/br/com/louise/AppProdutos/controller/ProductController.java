@@ -3,8 +3,10 @@ package br.com.louise.AppProdutos.controller;
 import br.com.louise.AppProdutos.dto.DTOProductRequest;
 import br.com.louise.AppProdutos.dto.DTOProductResponse;
 import br.com.louise.AppProdutos.service.ProductService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -20,6 +22,7 @@ public class ProductController {
     // Rota de ADMIN (Criar)
     @PostMapping("/admin/products")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SELLER')")
     public DTOProductResponse addProduct(@RequestBody DTOProductRequest request) {
         try {
             return productService.add(request);
@@ -28,15 +31,28 @@ public class ProductController {
         }
     }
 
-    // Rota PÚBLICA (Ler)
     @GetMapping("/products")
     public List<DTOProductResponse> readProducts() {
         return productService.fetchProducts();
     }
 
-    // Rota de ADMIN (Deletar)
+    @GetMapping("/products/{productId}")
+    public DTOProductResponse readProductById(@PathVariable String productId) {
+        try {
+            // Este método precisa ser criado na interface e implementação
+            return productService.readProductById(productId);
+        } catch (EntityNotFoundException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Produto não encontrado"
+            );
+        }
+    }
+
+    // DELETE /admin/products/{productId} - Deletar: ADMIN ou SELLER (se for dono)
     @DeleteMapping("/admin/products/{productId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    // Regra crucial: ADMIN OU verifica se o usuário logado é o dono do produto (#productId é o valor da PathVariable)
+    @PreAuthorize("hasRole('ROLE_ADMIN') or @productPermissionService.isOwner(#productId)")
     public void removeProduct(@PathVariable String productId) {
         try {
             productService.deleteProducts(productId);
@@ -44,4 +60,18 @@ public class ProductController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Produto não encontrado");
         }
     }
+
+    @PutMapping("/admin/products/{productId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or @productPermissionService.isOwner(#productId)")
+    public DTOProductResponse updateProduct(@PathVariable String productId, @RequestBody DTOProductRequest request) {
+        try {
+            return productService.updateProduct(productId, request); // Chamada ao novo método
+        } catch (EntityNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            // Pode ser erro de SKU duplicado vindo do Service
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Erro ao atualizar produto: " + e.getMessage());
+        }
+
+}
 }
