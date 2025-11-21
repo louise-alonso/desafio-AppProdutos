@@ -1,4 +1,4 @@
-# 🧪 Guia de Testes e Validação - AppProdutos
+#  Guia de Testes e Validação - AppProdutos
 
 Este documento descreve o roteiro passo a passo para validar a segurança, autenticação e regras de negócio da API.
 
