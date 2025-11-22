@@ -19,10 +19,8 @@ public class UserController {
 
     private final UserService userService;
 
-    // --- ALTERAÇÃO AQUI: Remova o @PreAuthorize deste método ---
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    // @PreAuthorize("hasRole('ROLE_ADMIN')") <--- COMENTE OU APAGUE ESTA LINHA
     public DTOUserResponse registerUser(@RequestBody DTOUserRequest DTOUserRequest) {
         try {
             return userService.createUser(DTOUserRequest);
@@ -30,17 +28,16 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to create user: " + e.getMessage());
         }
     }
-    // -----------------------------------------------------------
 
     @GetMapping("/users")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<DTOUserResponse> readUsers() {
         return userService.readUsers();
     }
 
     @DeleteMapping("/users/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteUser(@PathVariable String id) {
         try {
             userService.deleteUser(id);
@@ -50,7 +47,7 @@ public class UserController {
     }
 
     @PutMapping("/users/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public DTOUserResponse updateUsers(@PathVariable String id, @RequestBody DTOUserRequest DTOUserRequest) {
         try {
             return userService.updateUser(id, DTOUserRequest);

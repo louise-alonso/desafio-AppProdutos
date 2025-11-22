@@ -14,6 +14,5 @@ public class DTOCategoryResponse {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private Integer products;
-
     private String parentName;
 }

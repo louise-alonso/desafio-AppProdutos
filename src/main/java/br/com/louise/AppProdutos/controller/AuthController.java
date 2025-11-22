@@ -53,8 +53,8 @@ public class AuthController {
         String requestRefreshToken = request.getRefreshToken();
 
         return tokenService.findByToken(requestRefreshToken)
-                .map(tokenService::verifyExpiration) // Verifica se venceu
-                .map(RefreshTokenEntity::getUser)    // Pega o usuário dono do token
+                .map(tokenService::verifyExpiration)
+                .map(RefreshTokenEntity::getUser)
                 .map(user -> {
                     // Carrega UserDetails
                     UserDetails userDetails = appUserDetailsService.loadUserByUsername(user.getEmail());
@@ -64,9 +64,9 @@ public class AuthController {
 
                     return ResponseEntity.ok(DTOAuthResponse.builder()
                             .accessToken(token)
-                            .refreshToken(requestRefreshToken) // Mantém o mesmo refresh (ou poderia girar)
+                            .refreshToken(requestRefreshToken)
                             .email(user.getEmail())
-                            .role(user.getRole()) // Assumindo que a role está salva assim ou precisa de prefixo
+                            .role(user.getRole())
                             .build());
                 })
                 .orElseThrow(() -> new RuntimeException("Refresh token não encontrado no banco!"));

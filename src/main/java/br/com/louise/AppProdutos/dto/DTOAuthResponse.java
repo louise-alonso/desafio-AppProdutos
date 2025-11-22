@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 public class DTOAuthResponse {
     private String email;
     private String role;
-    private String accessToken;  // Renomeado para ficar claro
-    private String refreshToken; // Novo campo
+    private String accessToken;
+    private String refreshToken;
 }

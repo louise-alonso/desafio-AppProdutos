@@ -25,7 +25,6 @@ public class TokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
 
-    // --- GERAÇÃO DO ACCESS TOKEN (JWT Curto) ---
     public String generateAccessToken(UserDetails userDetails) {
         return JWT.create()
                 .withSubject(userDetails.getUsername())
@@ -36,7 +35,6 @@ public class TokenService {
                 .sign(Algorithm.HMAC512(Constants.TOKEN_PASSWORD));
     }
 
-    // --- GERAÇÃO DO REFRESH TOKEN (UUID Longo Salvo no Banco) ---
     public RefreshTokenEntity createRefreshToken(String email) {
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado para Refresh Token"));
@@ -50,7 +48,6 @@ public class TokenService {
         return refreshTokenRepository.save(refreshToken);
     }
 
-    // --- VALIDAÇÃO DO REFRESH TOKEN ---
     public RefreshTokenEntity verifyExpiration(RefreshTokenEntity token) {
         if (token.getExpiryDate().compareTo(Instant.now()) < 0) {
             refreshTokenRepository.delete(token);
@@ -63,7 +60,6 @@ public class TokenService {
         return refreshTokenRepository.findByToken(token);
     }
 
-    // --- VALIDAÇÃO DO ACCESS TOKEN (Para o Filtro) ---
     public String validateTokenAndGetSubject(String token) {
         try {
             return JWT.require(Algorithm.HMAC512(Constants.TOKEN_PASSWORD))

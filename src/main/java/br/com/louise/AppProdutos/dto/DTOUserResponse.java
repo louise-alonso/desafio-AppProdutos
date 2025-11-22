@@ -12,7 +12,6 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DTOUserResponse {
-    
     private String userId;
     private String email;
     private String name;

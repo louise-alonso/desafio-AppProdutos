@@ -16,13 +16,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductController {
 
-    // Dica: Geralmente o Controller só fala com o Service, não com o Repository direto.
     private final ProductService productService;
 
     // ADMIN e SELLER podem criar
     @PostMapping("/admin/products")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SELLER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     public DTOProductResponse addProduct(@RequestBody DTOProductRequest request) {
         try {
             return productService.add(request);
@@ -31,17 +30,16 @@ public class ProductController {
         }
     }
 
-    @GetMapping
+    @GetMapping("/products")
     public List<DTOProductResponse> readProducts() {
         return productService.fetchProducts();
     }
 
-
-    // DELETE /admin/products/{productId} - Deletar: ADMIN ou SELLER (se for dono)
+    // Deletar: ADMIN ou SELLER (se for dono)
     @DeleteMapping("/admin/products/{productId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    // Regra crucial: ADMIN OU verifica se o usuário logado é o dono do produto (#productId é o valor da PathVariable)
-    @PreAuthorize("hasRole('ROLE_ADMIN') or @productPermissionService.isOwner(#productId)")
+    // Regra: ADMIN ou Dono do produto
+    @PreAuthorize("hasRole('ADMIN') or @productPermissionService.isOwner(#productId)")
     public void removeProduct(@PathVariable String productId) {
         try {
             productService.deleteProducts(productId);
@@ -52,16 +50,14 @@ public class ProductController {
 
     // ADMIN e SELLER podem editar
     @PutMapping("/admin/products/{productId}")
-    @PreAuthorize("hasRole('ROLE_ADMIN') or @productPermissionService.isOwner(#productId)")
+    @PreAuthorize("hasRole('ADMIN') or @productPermissionService.isOwner(#productId)") // <--- ALTERADO
     public DTOProductResponse updateProduct(@PathVariable String productId, @RequestBody DTOProductRequest request) {
         try {
-            return productService.updateProduct(productId, request); // Chamada ao novo método
+            return productService.updateProduct(productId, request);
         } catch (EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (Exception e) {
-            // Pode ser erro de SKU duplicado vindo do Service
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Erro ao atualizar produto: " + e.getMessage());
         }
-
-}
+    }
 }

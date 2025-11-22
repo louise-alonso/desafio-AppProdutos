@@ -30,20 +30,35 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                // Libera frames para o H2 funcionar
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // --- ROTAS PÚBLICAS (Sem Login) ---
-                        // Dentro do método .authorizeHttpRequests:
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/refresh").permitAll() // ADICIONADO /auth/refresh
-                        .requestMatchers(HttpMethod.POST, "/admin/register").permitAll() // Cadastro liberado
+                        // ====================================================
+                        // 1. REGRAS PÚBLICAS (DEVEM VIR PRIMEIRO)
+                        // ====================================================
+
+                        // Cadastro (Ovo e a Galinha) - TEM QUE SER A PRIMEIRA
+                        .requestMatchers(HttpMethod.POST, "/admin/register").permitAll()
+
+                        // Autenticação
+                        .requestMatchers("/auth/**").permitAll()
+
+                        // H2 e Swagger/Docs
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                        // --- ROTAS PROTEGIDAS ---
+                        // Catálogo Público (GET)
+                        .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**").permitAll()
+
+                        // ====================================================
+                        // 2. REGRAS PROTEGIDAS (VÊM DEPOIS)
+                        // ====================================================
+
+                        // Qualquer outra rota /admin/** que não seja o register acima, precisa ser ADMIN
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                        // O restante exige autenticação genérica
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(validFilterJWT, UsernamePasswordAuthenticationFilter.class);

@@ -8,6 +8,5 @@ import lombok.Data;
 public class DTOCategoryRequest {
     private String name;
     private String description;
-
     private String parentId;
 }

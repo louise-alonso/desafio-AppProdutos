@@ -83,26 +83,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public DTOUserResponse updateUser(String userId, DTOUserRequest request) {
-        // 1. Busca o usuário existente pelo userId (o ID único)
         UserEntity existingUser = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found for update: " + userId));
 
-        // 2. Validação: Checar se o novo e-mail (se alterado) já existe em outro usuário
         if (!existingUser.getEmail().equalsIgnoreCase(request.getEmail()) && userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already exists for another user.");
         }
 
-        // 3. Atualiza campos
         existingUser.setName(request.getName());
         existingUser.setEmail(request.getEmail());
-        existingUser.setRole(request.getRole().toUpperCase()); // Novo Role (ADMIN, SELLER, CUSTOMER)
+        existingUser.setRole(request.getRole().toUpperCase());
 
-        // 4. Atualiza a Senha (Se for fornecida no request)
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
             existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
-        // 5. Salva e retorna
         existingUser = userRepository.save(existingUser);
         return convertToResponse(existingUser);
     }

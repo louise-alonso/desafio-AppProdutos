@@ -14,7 +14,5 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
 
     boolean existsBySku(String sku);
 
-    // --- ADICIONE ESTA LINHA ---
-    // Isso permite que o CategoryService conte quantos produtos existem numa categoria
     Integer countByCategory(CategoryEntity category);
 }

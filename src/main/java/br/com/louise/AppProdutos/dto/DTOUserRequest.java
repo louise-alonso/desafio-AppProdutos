@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DTOUserRequest {
-
     private String email;
     private String password;
     private String name;

@@ -50,9 +50,9 @@ public class CategoryEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parentId")
-    private CategoryEntity parent; // A categoria "Mãe"
+    private CategoryEntity parent;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
-    private List<CategoryEntity> children = new ArrayList<>(); // As sub-categorias
+    private List<CategoryEntity> children = new ArrayList<>();
 
 }

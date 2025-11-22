@@ -13,7 +13,7 @@ import br.com.louise.AppProdutos.dto.DTOCategoryResponse;
 import br.com.louise.AppProdutos.service.CategoryService;
 
 
-import jakarta.persistence.EntityNotFoundException; 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -25,7 +25,7 @@ public class CategoryController {
 
     @PostMapping ("/admin/categories")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public DTOCategoryResponse addCategory(@RequestBody DTOCategoryRequest request) {
         return categoryService.add(request);
     }
@@ -48,26 +48,25 @@ public class CategoryController {
 
     @DeleteMapping("/admin/categories/{categoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteCategory(@PathVariable String categoryId) {
         try {
             categoryService.delete(categoryId);
-        } catch (EntityNotFoundException e) { 
+        } catch (EntityNotFoundException e) {
             throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, e.getMessage()
+                    HttpStatus.NOT_FOUND, e.getMessage()
             );
         }
     }
 
     @PutMapping("/admin/categories/{categoryId}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public DTOCategoryResponse updateCategory(@PathVariable String categoryId, @RequestBody DTOCategoryRequest request) {
         try {
-            return categoryService.update(categoryId, request); // Chamada ao novo método
+            return categoryService.update(categoryId, request);
         } catch (EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (Exception e) {
-            // Pode ser erro de hierarquia ou nome duplicado
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
