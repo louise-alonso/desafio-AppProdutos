@@ -59,4 +59,6 @@ public class ProductEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ownerId", nullable = false)
     private UserEntity owner;
+
+    private String sellerEmail;
 }

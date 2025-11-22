@@ -12,8 +12,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
-
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin")
@@ -21,9 +19,10 @@ public class UserController {
 
     private final UserService userService;
 
+    // --- ALTERAÇÃO AQUI: Remova o @PreAuthorize deste método ---
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    // @PreAuthorize("hasRole('ROLE_ADMIN')") <--- COMENTE OU APAGUE ESTA LINHA
     public DTOUserResponse registerUser(@RequestBody DTOUserRequest DTOUserRequest) {
         try {
             return userService.createUser(DTOUserRequest);
@@ -31,6 +30,7 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to create user: " + e.getMessage());
         }
     }
+    // -----------------------------------------------------------
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -50,14 +50,13 @@ public class UserController {
     }
 
     @PutMapping("/users/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')") // Apenas ADMIN pode atualizar
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public DTOUserResponse updateUsers(@PathVariable String id, @RequestBody DTOUserRequest DTOUserRequest) {
         try {
             return userService.updateUser(id, DTOUserRequest);
         } catch (UsernameNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (Exception e) {
-            // Captura erros como e-mail duplicado
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Update failed: " + e.getMessage());
         }
     }

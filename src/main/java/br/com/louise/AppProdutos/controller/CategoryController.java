@@ -17,6 +17,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequestMapping("/categories")
 @RequiredArgsConstructor
 public class CategoryController {
 

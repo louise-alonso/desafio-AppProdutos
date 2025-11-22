@@ -3,7 +3,6 @@ package br.com.louise.AppProdutos.service.impl;
 import br.com.louise.AppProdutos.model.UserEntity;
 import br.com.louise.AppProdutos.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,10 +20,18 @@ public class AppUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        UserEntity user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com email: " + email));
+        UserEntity userEntity = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));
 
-        GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole()); // "ROLE_USER" ou "ROLE_ADMIN"
-        return new User(user.getEmail(), user.getPassword(), Collections.singleton(authority));
+        // Garante que a role tenha o prefixo ROLE_ (ex: ROLE_ADMIN)
+        String role = userEntity.getRole().startsWith("ROLE_")
+                ? userEntity.getRole()
+                : "ROLE_" + userEntity.getRole();
+
+        return new User(
+                userEntity.getEmail(),
+                userEntity.getPassword(),
+                Collections.singletonList(new SimpleGrantedAuthority(role))
+        );
     }
 }

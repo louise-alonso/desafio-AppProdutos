@@ -1,7 +1,6 @@
 package br.com.louise.AppProdutos.config;
 
-import br.com.louise.AppProdutos.filters.JwtRequestFilter;
-import br.com.louise.AppProdutos.service.impl.AppUserDetailsService;
+import br.com.louise.AppProdutos.filters.ValidFilterJWT;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,42 +20,33 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final AppUserDetailsService appUserDetailsService;
-    private final JwtRequestFilter jwtRequestFilter;
+    private final ValidFilterJWT validFilterJWT;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .headers(headers ->
-                        headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
-                )
-
-                // define as regras de autorização das URLs
+                // Libera frames para o H2 funcionar
+                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // endpoints públicos
-                        .requestMatchers("/auth/login").permitAll()
-                        .requestMatchers("/auth/encode").permitAll()
+                        // --- ROTAS PÚBLICAS (Sem Login) ---
+                        // Dentro do método .authorizeHttpRequests:
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/refresh").permitAll() // ADICIONADO /auth/refresh
+                        .requestMatchers(HttpMethod.POST, "/admin/register").permitAll() // Cadastro liberado
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                        .requestMatchers(HttpMethod.GET, "/categories").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/products").permitAll()
-
-                        // qualquer outra requisição precisa estar autenticada
+                        // --- ROTAS PROTEGIDAS ---
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(validFilterJWT, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -67,7 +57,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }

@@ -7,57 +7,60 @@ Este documento descreve o roteiro passo a passo para validar a segurança, auten
 **Pré-requisitos:**
 - Aplicação rodando (`mvn spring-boot:run`)
 - Postman, Insomnia ou outro API Client
+## Ciclo 1: Configuração Inicial (Bootstrap)
 
+Como o banco H2 é volátil (reinicia vazio), o primeiro passo é criar os usuários via API, já que o endpoint de registro foi configurado como **público**.
+
+### 1. Criar Usuários (Admin, Seller e Customer)
+
+**1.1 Registrar Admin**
+* **Rota:** `POST /admin/register`
+* **Body:** `{"name": "Admin Master", "email": "admin@email.com", "password": "123", "role": "ADMIN"}`
+* **Esperado:** `201 Created`
+
+**1.2 Registrar Vendedor**
+* **Rota:** `POST /admin/register`
+* **Body:** `{"name": "Joao Vendedor", "email": "joao@seller.com", "password": "123", "role": "SELLER"}`
+* **Esperado:** `201 Created`
+
+**1.3 Registrar Cliente**
+* **Rota:** `POST /admin/register`
+* **Body:** `{"name": "Maria Cliente", "email": "maria@customer.com", "password": "123", "role": "CUSTOMER"}`
+* **Esperado:** `201 Created`
 ---
 
-## Ciclo 1: Configuração Inicial e Autenticação
+### 2. Autenticação (Login e Tokens)
 
-### 1. Criar Usuário Admin no Banco
+Agora que os usuários existem, obtenha as credenciais de acesso.
 
-**1.1 Obter HASH de Senha**  
-`POST /auth/encode`  
-Body: `{"password": "senhaadmin"}`  
-→ Copie o hash gerado.
+**2.1 Login (Obter Tokens)**
+* **Rota:** `POST /auth/login`
+* **Body:** `{"email": "admin@email.com", "password": "123"}`
+* **Resposta:**
+    ```json
+    {
+        "accessToken": "eyJhbGciOiJIUz...",  // <-- Copie este para usar nas requisições
+        "refreshToken": "uuid-b839-..."      // <-- Guarde este para testar renovação
+    }
+    ```
 
-**1.2 Inserir no H2 Console**  
-Use o hash para criar o Admin com `ROLE_ADMIN`.
-
+> **DICA:** Repita o processo de login para o **Vendedor** e o **Cliente** e guarde os tokens de cada um para os testes de permissão abaixo.
 ---
 
-### 2. Login e Criação de Perfis
+## Ciclo 2: Gestão de Usuários e Segurança (RBAC)
 
-**2.1 Token Admin**  
-`POST /auth/login`  
-→ Copie o **TOKEN_ADMIN**.
+Teste se as permissões de acesso às rotas administrativas estão funcionando.
 
-**2.2 Criar Perfis**  
-Usando o **TOKEN_ADMIN**:
-- Crie `ROLE_SELLER`
-- Crie `ROLE_CUSTOMER`
+**Token Ativo:** Use o `accessToken` do **ADMIN** (salvo no passo anterior), exceto onde indicado.
 
-**2.3 Obter Tokens Individuais**  
-Faça login como SELLER e CUSTOMER.
-
-| Perfil | Permissão |
-|-------|-----------|
-| Admin | Total |
-| Seller | CRUD de produtos próprios |
-| Customer | Apenas leitura |
-
----
-
-##  Ciclo 2: Testes de Usuário e Segurança (CRUD Geral)
-
-**Token necessário: ADMIN**
-
-| Ação | Rota | Cenário | Esperado | Regra |
-|------|------|----------|-----------|--------|
-| Criar usuário | POST /admin/register | Criar SELLER | 201 | Criação liberada |
-| Listar usuários | GET /admin/users | Listar todos | 200 | Admin pode listar |
-| Atualizar | PUT /admin/users/{id} | Trocar role | 200 | PUT funcionando |
-| Atualizar (negativo) | PUT /admin/users/{id} | E-mail duplicado | 400 | E-mail único |
-| Deletar | DELETE /admin/users/{id} | Remoção | 204 | DELETE funcionando |
-
+| Ação | Rota | Token Usado | Cenário | Esperado |
+|------|------|-------------|----------|-----------|
+| **Listar Usuários** | `GET /admin/users` | **ADMIN** | Ver lista completa | **200 OK** |
+| **Bloqueio de Listagem** | `GET /admin/users` | **SELLER** | Vendedor tenta ver lista | **403 Forbidden** |
+| **Atualizar Usuário** | `PUT /admin/users/{id}` | **ADMIN** | Alterar nome de um usuário | **200 OK** |
+| **Erro de Validação** | `PUT /admin/users/{id}` | **ADMIN** | Tentar usar e-mail já existente | **400 Bad Request** |
+| **Deletar Usuário** | `DELETE /admin/users/{id}` | **ADMIN** | Remover um usuário | **204 No Content** |
+| **Renovar Token** | `POST /auth/refresh` | *(Público)* | Body: `{"refreshToken": "uuid..."}` | **200 OK** (Novo Token) |
 ---
 
 ##  Ciclo 3: Testes de Categoria (Integridade e Estrutura)

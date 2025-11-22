@@ -11,9 +11,10 @@ public interface ProductService {
 
     List<DTOProductResponse> fetchProducts();
 
-    void deleteProducts (String productId);
+    void deleteProducts(String productId);
 
     DTOProductResponse readProductById(String productId);
 
     DTOProductResponse updateProduct(String productId, DTOProductRequest request);
+
 }

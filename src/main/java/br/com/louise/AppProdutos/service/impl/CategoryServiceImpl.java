@@ -80,17 +80,18 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private DTOCategoryResponse convertToResponse(CategoryEntity category) {
-        Integer productsCount = productRepository.countByCategoryId(category.getId());
+
+        // CORREÇÃO: Passe o objeto 'category', não o ID
+        Integer productsCount = productRepository.countByCategory(category);
 
         return DTOCategoryResponse.builder()
                 .categoryId(category.getCategoryId())
                 .name(category.getName())
                 .description(category.getDescription())
+                .products(productsCount) // Agora vai funcionar
+                .parentName(category.getParent() != null ? category.getParent().getName() : null)
                 .createdAt(category.getCreatedAt())
                 .updatedAt(category.getUpdatedAt())
-                .products(productsCount)
-                // Lógica para mostrar o nome do pai (se existir) ou null
-                .parentName(category.getParent() != null ? category.getParent().getName() : null)
                 .build();
     }
 

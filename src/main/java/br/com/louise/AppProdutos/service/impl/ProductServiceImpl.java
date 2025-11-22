@@ -11,10 +11,11 @@ import br.com.louise.AppProdutos.repository.UserRepository;
 import br.com.louise.AppProdutos.service.ProductService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +31,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public DTOProductResponse add(DTOProductRequest request) {
+
         // Validação de SKU
         if (productRepository.existsBySku(request.getSku())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Já existe um produto com o SKU: " + request.getSku());
@@ -41,7 +43,7 @@ public class ProductServiceImpl implements ProductService {
         ProductEntity newProduct = convertToEntity(request);
         newProduct.setCategory(existingCategory);
 
-        // define o dono
+        // Define o dono (Owner)
         // Pega o email do usuário autenticado no contexto de segurança
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity owner = userRepository.findByEmail(userEmail)
@@ -68,12 +70,63 @@ public class ProductServiceImpl implements ProductService {
 
         return convertToResponse(existingProduct);
     }
+
     @Override
     public void deleteProducts(String productId) {
+        // Nota: A permissão de quem pode deletar (apenas ADMIN) deve ser controlada no Controller via @PreAuthorize
         ProductEntity existingProduct = productRepository.findByProductId(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado"));
 
         productRepository.delete(existingProduct);
+    }
+
+    @Override
+    public DTOProductResponse updateProduct(String productId, DTOProductRequest request) {
+        // 1. Busca o produto existente
+        ProductEntity existingProduct = productRepository.findByProductId(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado para atualização."));
+
+        // --- LÓGICA DE SEGURANÇA (SELLER) ---
+        String emailLogado = SecurityContextHolder.getContext().getAuthentication().getName();
+        String roleLogada = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().iterator().next().getAuthority();
+
+        // Verifica se é Vendedor tentando editar produto de outro
+        if ("ROLE_SELLER".equals(roleLogada)) {
+            // Se o produto não tiver dono ou o dono for diferente do logado -> Bloqueia
+            if (existingProduct.getOwner() == null || !existingProduct.getOwner().getEmail().equals(emailLogado)) {
+                throw new AccessDeniedException("Você só pode alterar seus próprios produtos.");
+            }
+        }
+        // -------------------------------------
+
+        // 2. Validação de SKU: Checa se o novo SKU é diferente E se o novo SKU já existe em outro produto
+        if (!existingProduct.getSku().equals(request.getSku()) && productRepository.existsBySku(request.getSku())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Já existe outro produto com o SKU: " + request.getSku());
+        }
+
+        // 3. Busca a categoria (se o ID for fornecido e for diferente)
+        CategoryEntity newCategory = existingProduct.getCategory();
+        if (request.getCategoryId() != null &&
+                (existingProduct.getCategory() == null || !existingProduct.getCategory().getCategoryId().equals(request.getCategoryId()))) {
+
+            newCategory = categoryRepository.findByCategoryId(request.getCategoryId())
+                    .orElseThrow(() -> new EntityNotFoundException("Nova Categoria não encontrada."));
+        }
+
+        // 4. Atualiza os campos
+        existingProduct.setName(request.getName());
+        existingProduct.setDescription(request.getDescription());
+        existingProduct.setPrice(request.getPrice());
+        existingProduct.setSku(request.getSku());
+        existingProduct.setCostPrice(request.getCostPrice());
+        existingProduct.setStockQuantity(request.getStockQuantity());
+        // Nota: Não atualizamos o 'owner' na edição para impedir troca de posse
+        existingProduct.setCategory(newCategory);
+
+        // 5. Salva e retorna
+        existingProduct = productRepository.save(existingProduct);
+        return convertToResponse(existingProduct);
     }
 
     private DTOProductResponse convertToResponse(ProductEntity productEntity) {
@@ -104,39 +157,5 @@ public class ProductServiceImpl implements ProductService {
                 .stockQuantity(request.getStockQuantity())
                 .active(true)
                 .build();
-    }
-    @Override
-    public DTOProductResponse updateProduct(String productId, DTOProductRequest request) {
-        // 1. Busca o produto existente
-        ProductEntity existingProduct = productRepository.findByProductId(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado para atualização."));
-
-        // 2. Validação de SKU: Checa se o novo SKU é diferente E se o novo SKU já existe em outro produto
-        if (!existingProduct.getSku().equals(request.getSku()) && productRepository.existsBySku(request.getSku())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Já existe outro produto com o SKU: " + request.getSku());
-        }
-
-        // 3. Busca a categoria (se o ID for fornecido e for diferente)
-        CategoryEntity newCategory = existingProduct.getCategory();
-        if (request.getCategoryId() != null &&
-                (existingProduct.getCategory() == null || !existingProduct.getCategory().getCategoryId().equals(request.getCategoryId()))) {
-
-            newCategory = categoryRepository.findByCategoryId(request.getCategoryId())
-                    .orElseThrow(() -> new EntityNotFoundException("Nova Categoria não encontrada."));
-        }
-
-        // 4. Atualiza os campos
-        existingProduct.setName(request.getName());
-        existingProduct.setDescription(request.getDescription());
-        existingProduct.setPrice(request.getPrice());
-        existingProduct.setSku(request.getSku());
-        existingProduct.setCostPrice(request.getCostPrice());
-        existingProduct.setStockQuantity(request.getStockQuantity());
-        // A propriedade owner (dono) não é alterada aqui
-        existingProduct.setCategory(newCategory);
-
-        // 5. Salva e retorna
-        existingProduct = productRepository.save(existingProduct);
-        return convertToResponse(existingProduct);
     }
 }

@@ -19,7 +19,7 @@ public class ProductController {
     // Dica: Geralmente o Controller só fala com o Service, não com o Repository direto.
     private final ProductService productService;
 
-    // Rota de ADMIN (Criar)
+    // ADMIN e SELLER podem criar
     @PostMapping("/admin/products")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SELLER')")
@@ -31,22 +31,11 @@ public class ProductController {
         }
     }
 
-    @GetMapping("/products")
+    @GetMapping
     public List<DTOProductResponse> readProducts() {
         return productService.fetchProducts();
     }
 
-    @GetMapping("/products/{productId}")
-    public DTOProductResponse readProductById(@PathVariable String productId) {
-        try {
-            // Este método precisa ser criado na interface e implementação
-            return productService.readProductById(productId);
-        } catch (EntityNotFoundException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Produto não encontrado"
-            );
-        }
-    }
 
     // DELETE /admin/products/{productId} - Deletar: ADMIN ou SELLER (se for dono)
     @DeleteMapping("/admin/products/{productId}")
@@ -61,6 +50,7 @@ public class ProductController {
         }
     }
 
+    // ADMIN e SELLER podem editar
     @PutMapping("/admin/products/{productId}")
     @PreAuthorize("hasRole('ROLE_ADMIN') or @productPermissionService.isOwner(#productId)")
     public DTOProductResponse updateProduct(@PathVariable String productId, @RequestBody DTOProductRequest request) {

@@ -2,63 +2,73 @@ package br.com.louise.AppProdutos.controller;
 
 import br.com.louise.AppProdutos.dto.DTOAuthRequest;
 import br.com.louise.AppProdutos.dto.DTOAuthResponse;
+import br.com.louise.AppProdutos.dto.DTORefreshTokenRequest;
+import br.com.louise.AppProdutos.model.RefreshTokenEntity;
+import br.com.louise.AppProdutos.service.TokenService;
 import br.com.louise.AppProdutos.service.impl.AppUserDetailsService;
-import br.com.louise.AppProdutos.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Map;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
     private final AppUserDetailsService appUserDetailsService;
-    private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
-    public DTOAuthResponse login(@RequestBody DTOAuthRequest request) throws Exception {
-        // autenticação email e senha
-        authenticate(request.getEmail(), request.getPassword());
-        final UserDetails userDetails = appUserDetailsService.loadUserByUsername(request.getEmail());
+    public ResponseEntity<DTOAuthResponse> login(@RequestBody DTOAuthRequest request) {
+        // 1. Autentica
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        );
 
-        final String token = jwtUtil.generateToken(userDetails);
-        final String role = userDetails.getAuthorities().iterator().next().getAuthority();
+        UserDetails userDetails = (UserDetails) auth.getPrincipal();
 
-        return DTOAuthResponse.builder()
+        // 2. Gera Access Token
+        String accessToken = tokenService.generateAccessToken(userDetails);
+
+        // 3. Gera Refresh Token
+        RefreshTokenEntity refreshToken = tokenService.createRefreshToken(userDetails.getUsername());
+
+        String role = userDetails.getAuthorities().iterator().next().getAuthority();
+
+        return ResponseEntity.ok(DTOAuthResponse.builder()
                 .email(userDetails.getUsername())
                 .role(role)
-                .token(token)
-                .build();
+                .accessToken(accessToken)
+                .refreshToken(refreshToken.getToken())
+                .build());
     }
 
-    private void authenticate(String email, String password) throws Exception {
-        try {
-            // verifica se as credenciais batem
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-        } catch (DisabledException e) {
-            throw new DisabledException("Usuário desabilitado", e);
-        } catch (BadCredentialsException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Credenciais inválidas", e);
-        }
-    }
+    @PostMapping("/refresh")
+    public ResponseEntity<DTOAuthResponse> refreshToken(@RequestBody DTORefreshTokenRequest request) {
+        String requestRefreshToken = request.getRefreshToken();
 
-    @PostMapping("/encode")
-    public String encodePassword(@RequestBody Map<String, String> request) {
-        return passwordEncoder.encode(request.get("password"));
+        return tokenService.findByToken(requestRefreshToken)
+                .map(tokenService::verifyExpiration) // Verifica se venceu
+                .map(RefreshTokenEntity::getUser)    // Pega o usuário dono do token
+                .map(user -> {
+                    // Carrega UserDetails
+                    UserDetails userDetails = appUserDetailsService.loadUserByUsername(user.getEmail());
+
+                    // Gera NOVO Access Token
+                    String token = tokenService.generateAccessToken(userDetails);
+
+                    return ResponseEntity.ok(DTOAuthResponse.builder()
+                            .accessToken(token)
+                            .refreshToken(requestRefreshToken) // Mantém o mesmo refresh (ou poderia girar)
+                            .email(user.getEmail())
+                            .role(user.getRole()) // Assumindo que a role está salva assim ou precisa de prefixo
+                            .build());
+                })
+                .orElseThrow(() -> new RuntimeException("Refresh token não encontrado no banco!"));
     }
 }

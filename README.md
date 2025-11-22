@@ -14,10 +14,38 @@ O **AppProdutos** utiliza uma arquitetura em camadas e segue rigorosamente os pr
 | :--- | :--- | :--- | :--- |
 | **Linguagem** | Java | 21 | Foco em features modernas da linguagem. |
 | **Framework** | Spring Boot | 3.5.7 | Utilizando as especificações Jakarta EE. |
-| **Segurança** | Spring Security + JWT | 3.x / 0.9.1 | Controle de acesso via `@PreAuthorize`. |
+| **Segurança** | Spring Security + **Auth0 JWT** | 6.x / 4.4.0 | Autenticação via **Access Token** e **Refresh Token**. |
 | **Persistência** | Spring Data JPA | N/A | Abstração da camada de dados. |
 | **Banco de Dados** | H2 Database | N/A | Banco em memória para ambiente de desenvolvimento. |
 
+---
+
+## Como Configurar e Rodar
+
+### 1. Configuração Local
+
+1.  Clone o repositório.
+2.  Execute o comando Maven para baixar as dependências:
+    ```bash
+    mvn clean install
+    ```
+3.  Rode a aplicação:
+    ```bash
+    mvn spring-boot:run
+    ```
+
+### 2. Acesso e Credenciais Iniciais
+
+O banco H2 é volátil (reinicia vazio). Siga este fluxo para o primeiro acesso:
+
+1.  **Console do Banco:** `http://localhost:8080/h2-console`
+    * URL JDBC: `jdbc:h2:mem:produtosdb`
+    * User: `sa` / Password: (vazia)
+2.  **Criar o Primeiro Admin (Via API):**
+    * Faça um `POST` em `/admin/register` com os dados do usuário e role `ADMIN`.
+3.  **Login:**
+    * Faça um `POST` em `/auth/login` para receber o par de chaves (`accessToken` e `refreshToken`).
+    
 ---
 
 ## Status do Desenvolvimento (Core Business Logic)
@@ -26,10 +54,10 @@ O **AppProdutos** utiliza uma arquitetura em camadas e segue rigorosamente os pr
 
 | Módulo | Funcionalidade Chave | Regras de Negócio |
 | :--- | :--- | :--- |
-| **Segurança & RBAC** | Implementação **Stateless** com JWT e BCrypt. | **Três Perfis:** `ADMIN`, `SELLER`, `CUSTOMER`. Controle de acesso por propriedade (`isOwner`). |
-| **Módulo Usuários** | CRUD Completo de Usuários (`/admin/users`). | Validação de e-mail único. |
+| **Segurança & RBAC** | Autenticação **Dual-Token** (Access + Refresh). | **Access Token:** Validade curta (1h). **Refresh Token:** Validade longa (30 dias), persistido no banco e revogável. |
+| **Módulo Usuários** | Cadastro Público e Gestão de Usuários. | Validação de e-mail/login via Regex. O endpoint de registro é público para facilitar o setup inicial ("Ovo e a Galinha"). |
 | **Módulo Categorias** | CRUD Completo de Categorias. | **Hierarquia Plana Crítica:** Proibição de associação Pai/Filho entre categorias. |
-| **Módulo Produtos** | CRUD Completo de Produtos (`/admin/products`). | Bloqueio de **SKU Duplicado**. Produto obrigatoriamente associado a uma Categoria e um Proprietário. |
+| **Módulo Produtos** | CRUD Completo de Produtos (`/admin/products`). | Bloqueio de **SKU Duplicado**. Produto obrigatoriamente associado a uma Categoria e um Proprietário (Seller). |
 
 ### Perfis de Usuário e Permissões
 
@@ -56,45 +84,29 @@ O foco agora é na implementação dos módulos transacionais (Vendas e Inventá
 
 ---
 
-## Como Configurar e Rodar
+## Endpoints Principais da API
 
-### 1. Configuração Local
-
-1.  Clone o repositório.
-2.  Execute o comando Maven para baixar as dependências:
-    ```bash
-    mvn clean install
-    ```
-3.  Rode a aplicação:
-    ```bash
-    mvn spring-boot:run
-    ```
-
-### 2. Acesso e Credenciais Iniciais
-
-* **Console do Banco:** Acesse `http://localhost:8080/h2-console`
-    * URL JDBC: `jdbc:h2:mem:produtosdb`
-    * User: `sa` / Password: (vazia)
-* **Primeiro Admin:** Use o endpoint `/auth/encode` para gerar o hash de `senhaadmin` e insira o usuário `admin@email.com` no H2 Console.
-
----
-
-##  Endpoints Principais da API
-
-###  Módulo de Autenticação e Catálogo
+### Módulo de Autenticação e Usuários
 
 | Método | Rota | Acesso | Descrição |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/auth/login` | Público | Autenticação e emissão do Token JWT. |
+| `POST` | `/admin/register` | **Público** | Criação de novos usuários (Admin, Seller, Customer). |
+| `POST` | `/auth/login` | **Público** | Login. Retorna `accessToken` (1h) e `refreshToken` (30d). |
+| `POST` | `/auth/refresh` | **Público** | Envia um `refreshToken` válido para receber um novo `accessToken`. |
+| `GET` | `/auth/me` | Autenticado | Retorna detalhes do usuário logado (para validação rápida). |
+
+### Módulo de Produtos e Categorias
+
+| Método | Rota | Acesso | Descrição |
+| :--- | :--- | :--- | :--- |
 | `GET` | `/products` | Público | Lista todos os produtos (Catálogo). |
 | `GET` | `/categories` | Público | Lista todas as categorias. |
 | `GET` | `/products/{id}` | Público | Detalhes de um produto por ID. |
 
-###  Módulo de Gestão (Rotas Protegidas)
+### Módulo de Gestão (Rotas Protegidas)
 
 | Recurso | Método | Rota | Permissões |
 | :--- | :--- | :--- | :--- |
-| **Usuário** | `POST` | `/admin/register` | `ROLE_ADMIN` |
 | **Produto** | `POST` | `/admin/products` | `ROLE_ADMIN`, `ROLE_SELLER` |
 | **Produto** | `PUT`/`DELETE` | `/admin/products/{id}` | `ROLE_ADMIN` **OU** Dono do Produto |
 | **Categoria** | `POST`/`PUT`/`DELETE` | `/admin/categories` | `ROLE_ADMIN` |

@@ -9,10 +9,10 @@ Prefixos:
 
 ---------------------------------------------------------------------
 
-## AUTENTICAÇÃO
+## AUTENTICAÇÃO (DUAL TOKEN)
 
 ### POST /auth/login
-Autentica usuário e retorna Token JWT.
+Autentica usuário e inicia sessão.
 
 Body (JSON):
 {
@@ -22,7 +22,27 @@ Body (JSON):
 
 Resposta (200):
 {
-"token": "string",
+"accessToken": "string (JWT - 1 hora)",
+"refreshToken": "string (UUID - 30 dias)",
+"email": "string",
+"role": "string"
+}
+
+Permissão: Público
+---
+
+### POST /auth/refresh
+Renova o Access Token usando um Refresh Token válido.
+
+Body (JSON):
+{
+"refreshToken": "string (UUID)"
+}
+
+Resposta (200):
+{
+"accessToken": "string (Novo JWT)",
+"refreshToken": "string (UUID mantido)",
 "email": "string",
 "role": "string"
 }
@@ -31,25 +51,20 @@ Permissão: Público
 
 ---
 
-### POST /auth/encode
-Gera hash BCrypt para testes.
-
-Body (JSON):
-{
-"password": "string"
-}
+### GET /auth/me
+Retorna os dados do usuário logado (para validação de token).
 
 Resposta (200):
-"hashedPasswordString"
+"Usuário autenticado: {email}"
 
-Permissão: Público
-
+Permissão: Autenticado (Qualquer perfil)
 ---------------------------------------------------------------------
 
-## USUÁRIOS (ROLE_ADMIN)
+## USUÁRIOS E CADASTRO
 
 ### POST /admin/register
-Cria um usuário.
+Cria um novo usuário no sistema.
+*Nota: Endpoint público para permitir o primeiro acesso (Bootstrap).*
 
 Body (JSON):
 {
@@ -67,12 +82,12 @@ Resposta (201):
 "role": "string"
 }
 
-Permissão: ROLE_ADMIN
+Permissão: Público
 
 ---
 
 ### GET /admin/users
-Lista todos os usuários.
+Lista todos os usuários cadastrados.
 
 Resposta (200):
 [
@@ -89,7 +104,7 @@ Permissão: ROLE_ADMIN
 ---
 
 ### PUT /admin/users/{userId}
-Atualiza dados de um usuário.
+Atualiza dados de um usuário existente.
 
 Body (JSON):
 {
@@ -112,7 +127,7 @@ Permissão: ROLE_ADMIN
 ---
 
 ### DELETE /admin/users/{userId}
-Remove o usuário.
+Remove um usuário do sistema.
 
 Resposta: 204 No Content  
 Permissão: ROLE_ADMIN
