@@ -37,16 +37,23 @@ public class SecurityConfig {
                         // 1. REGRAS PÚBLICAS (DEVEM VIR PRIMEIRO)
                         // ====================================================
 
-                        // Cadastro (Ovo e a Galinha) - TEM QUE SER A PRIMEIRA
+                        // Cadastro
                         .requestMatchers(HttpMethod.POST, "/admin/register").permitAll()
 
                         // Autenticação
                         .requestMatchers("/auth/**").permitAll()
 
-                        // H2 e Swagger/Docs
+                        // H2 Console
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
+                        // --- CORREÇÃO AQUI: Liberar todas as variações do Swagger ---
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html" // <--- Faltava essa linha específica!
+                        ).permitAll()
+                        // ------------------------------------------------------------
 
                         // Catálogo Público (GET)
                         .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**").permitAll()
@@ -55,10 +62,10 @@ public class SecurityConfig {
                         // 2. REGRAS PROTEGIDAS (VÊM DEPOIS)
                         // ====================================================
 
-                        // Qualquer outra rota /admin/** que não seja o register acima, precisa ser ADMIN
+                        // Rotas de Admin
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                        // O restante exige autenticação genérica
+                        // O restante exige autenticação
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(validFilterJWT, UsernamePasswordAuthenticationFilter.class);

@@ -3,6 +3,7 @@ package br.com.louise.AppProdutos.controller;
 import br.com.louise.AppProdutos.dto.inventory.DTOInventoryRequest;
 import br.com.louise.AppProdutos.model.InventoryTransactionEntity;
 import br.com.louise.AppProdutos.service.InventoryService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid; // <--- Importante
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/inventory")
 @RequiredArgsConstructor
+@Tag(name = "05. Estoque (Inventory)")
 public class InventoryController {
 
     private final InventoryService inventoryService;

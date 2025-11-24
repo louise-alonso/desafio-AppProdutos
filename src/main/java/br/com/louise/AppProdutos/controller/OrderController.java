@@ -6,6 +6,7 @@ import br.com.louise.AppProdutos.dto.order.DTOOrderStatusRequest;
 
 import br.com.louise.AppProdutos.repository.OrderEntityRepository;
 import br.com.louise.AppProdutos.service.OrderService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -20,6 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
+@Tag(name = "07. Pedidos e Pagamentos")
 public class OrderController {
 
     private final OrderService orderService;

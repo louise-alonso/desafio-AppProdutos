@@ -1,154 +1,27 @@
-# Guia de Testes e Validação - AppProdutos
+# Estratégia de Testes - AppProdutos
 
-Este documento descreve o roteiro passo a passo para validar a segurança, autenticação, regras de negócio e o fluxo de pedidos da API.
+Este documento descreve a abordagem de testes automatizados utilizada no projeto **AppProdutos**. O objetivo é garantir a integridade das regras de negócio, a segurança dos endpoints e a estabilidade do sistema como um todo.
 
-**Pré-requisitos:**
-- Aplicação rodando (`mvn spring-boot:run`)
-- Postman, Insomnia ou outro API Client
+## 🛠 Tecnologias e Ferramentas
 
----
+* **JUnit 5:** Framework base para a execução dos testes.
+* **Mockito:** Framework de mocking para isolar componentes e simular comportamentos de dependências (Service/Repository).
+* **Spring Boot Test:** Suporte integrado para testes de contexto (`@SpringBootTest`, `@WebMvcTest`, `@DataJpaTest`).
+* **MockMvc:** Ferramenta para simular requisições HTTP e validar respostas de Controllers sem subir um servidor real.
+* **H2 Database:** Banco de dados em memória utilizado para testes de repositório, garantindo isolamento e rapidez.
 
-## Ciclo 1: Configuração Inicial (Bootstrap)
+## 🏗 Estrutura dos Testes
 
-**1.1 Registrar Admin, Vendedor e Cliente**
-* Use a rota `POST /admin/register` para criar os 3 perfis.
+Os testes seguem a mesma estrutura de pacotes do código-fonte principal (`src/main/java`), localizados em `src/test/java`:
 
-**1.2 Login (Obter Tokens)**
-* Use a rota `POST /auth/login` e guarde os tokens: `TOKEN_ADMIN`, `TOKEN_SELLER`, `TOKEN_CLIENT`.
+```text
+src/test/java/br/com/louise/AppProdutos
+├── controller   # Testes de Integração da Camada Web (REST)
+├── service      # Testes Unitários da Lógica de Negócio
+└── repository   # Testes de Integração com Banco de Dados
 
----
-
-## Ciclo 2: Gestão de Usuários e Segurança (RBAC)
-
-**Token Ativo:** `TOKEN_ADMIN`
-
-| Ação | Rota | Token | Esperado |
-|------|------|-------|----------|
-| Listar Usuários | `GET /admin/users` | ADMIN | **200 OK** |
-| Bloqueio | `GET /admin/users` | SELLER | **403 Forbidden** |
-| Renovar Token | `POST /auth/refresh` | (Público) | **200 OK** |
-
----
-
-## Ciclo 3: Categorias e Produtos (Setup)
-
-1.  **Criar Categoria** (`TOKEN_ADMIN`): `POST /admin/categories`. Guarde o ID.
-2.  **Criar Produto** (`TOKEN_SELLER`): `POST /admin/products`.
-    * Preço: **100.00**
-    * Estoque: **10**
-    * Guarde o ID do Produto.
-
----
-
-## Ciclo 4: Gestão de Estoque
-
-**Token Ativo:** `TOKEN_SELLER`
-
-1.  **Entrada Manual:** `POST /inventory/adjust` (Type: ENTRY, Qtd: 5). Estoque vai para 15.
-2.  **Histórico:** `GET /inventory/product/{id}`. Deve listar a criação e o ajuste.
-
----
-
-## Ciclo 5: Carrinho de Compras
-
-**Token Ativo:** `TOKEN_CLIENT`
-
-1.  **Adicionar:** `POST /cart/add` (Qtd: 2).
-2.  **Conferir:** `GET /cart`. Total deve ser **200.00**.
-
----
-
-## Ciclo 6: Cupons e Promoções 🆕
-
-Vamos testar o novo módulo.
-
-**Token Ativo:** `TOKEN_ADMIN`
-
-1.  **Criar Cupom (10% OFF)**
-    * **Rota:** `POST /coupons`
-    * **Body:**
-        ```json
-        {
-          "code": "QUERO10",
-          "type": "PERCENTAGE",
-          "value": 10,
-          "expirationDate": "2030-12-31"
-        }
-        ```
-    * **Esperado:** `201 Created`.
-
-2.  **Criar Cupom (Fixo R$ 50)**
-    * **Body:** `{"code": "MEGA50", "type": "FIXED", "value": 50, ...}`
-
----
-
-## Ciclo 7: Fluxo de Pedido com Desconto 🆕
-
-**Token Ativo:** `TOKEN_CLIENT`
-
-1.  **Checkout com Cupom**
-    * **Rota:** `POST /orders`
-    * **Body:**
-        ```json
-        {
-          "paymentMethod": "PIX",
-          "phoneNumber": "11999999999",
-          "couponCode": "QUERO10"
-        }
-        ```
-2.  **Validação Financeira**
-    * Subtotal (2 itens x 100): **200.00**
-    * Desconto (10%): **-20.00**
-    * Taxa (10% do subtotal): **+20.00**
-    * **Grand Total Esperado:** 200 - 20 + 20 = **200.00**
-    * **Status:** `PAID`.
-
----
-
-## Ciclo 8: Testes de Erro (Cupons) 🆕
-
-| Ação | Cenário | Esperado |
-|------|----------|-----------|
-| **Cupom Inválido** | Enviar `couponCode: "NAOEXISTE"` no checkout | **404 Not Found** |
-| **Cupom Vencido** | Criar cupom com data passada e tentar usar | **400 Bad Request** |
-| **Valor Mínimo** | Tentar usar cupom de "Mínimo 500" em compra de 200 | **400 Bad Request** |
-
----
-
-## Ciclo 9: Avaliações e Reviews (Engajamento) 🆕
-
-Teste a regra de "Compra Verificada".
-
-**Pré-requisito:** Ter realizado o Ciclo 7 (Compra) com o `TOKEN_CLIENT`.
-
-**Token Ativo:** `TOKEN_CLIENT` (Dono do Pedido)
-
-1.  **Preparar Status (Via Admin)**
-    * O pedido criado no Ciclo 7 provavelmente está `PAID` (se foi PIX). Se estiver `CREATED`, use o endpoint de admin para mudar para `PAID` ou `DELIVERED`.
-    * **Rota:** `PUT /orders/{orderId}/status` (Use `TOKEN_ADMIN`).
-    * **Body:** `{"status": "DELIVERED"}`.
-
-2.  **Criar Avaliação (Sucesso)**
-    * **Rota:** `POST /reviews`
-    * **Body:**
-        ```json
-        {
-          "productId": "COLE_O_ID_DO_PRODUTO",
-          "orderId": "COLE_O_ID_DO_PEDIDO",
-          "rating": 5,
-          "comment": "Produto excelente! Chegou rápido."
-        }
-        ```
-    * **Esperado:** `201 Created`.
-
-3.  **Verificar Média do Produto**
-    * **Rota:** `GET /products/{productId}` (Público).
-    * **Esperado:** No JSON do produto, `averageRating` deve ser **5.0** e `reviewCount` deve ser **1**.
-
-4.  **Tentar Avaliar Duplicado (Erro)**
-    * Repita a requisição do passo 2.
-    * **Esperado:** `400 Bad Request` ("Você já avaliou este produto...").
-
-5.  **Ler Avaliações**
-    * **Rota:** `GET /reviews/product/{productId}`.
-    * **Esperado:** Lista contendo o comentário "Produto excelente!".
+Tipos de Testes Implementados1. Testes Unitários (Service Layer)Foco: Validar a lógica de negócio isolada.Técnica: Utilizamos @ExtendWith(MockitoExtension.class) para injetar mocks. Nenhuma conexão com banco de dados ou contexto Spring é carregada aqui, tornando os testes extremamente rápidos.Cenários Cobertos:Cálculo de descontos de cupons (Percentual e Fixo).Validação de estoque insuficiente e fluxo de movimentação (Entrada/Saída).Regras de checkout (Carrinho vazio, Usuário inexistente).Lógica de Média de Avaliações (Reviews).Segurança: Validação se o usuário (Seller) é dono do produto.2. Testes de Controlador (Controller Layer)Foco: Validar o contrato da API (Status Code, JSON de resposta e Segurança).Técnica: Utilizamos @WebMvcTest para carregar apenas a camada web.Segurança: Simulamos a autenticação e autorização com @WithMockUser e mocks do TokenService e UserDetailsService.Cenários Cobertos:POST /orders: Deve retornar 201 Created para payload válido.POST /reviews: Deve retornar 400 Bad Request se faltar o ID do pedido.GET /reports: Deve retornar 403 Forbidden se o usuário não for ADMIN.3. Testes de Repositório (Data Layer)Foco: Validar queries customizadas (JPQL/Native SQL) e mapeamento de entidades.Técnica: Utilizamos @DataJpaTest, que configura automaticamente um banco H2 em memória.Cenários Cobertos:Relatório de Vendas: Agrupamento por data e soma de valores.Histórico de Estoque: Ordenação correta por data de criação (Decrescente).🚀 Como Executar os TestesVia Linha de Comando (Maven)Para rodar a suíte completa de testes:Bashmvn test
+Para rodar apenas um teste específico (ex: apenas os de Pedido):Bashmvn -Dtest=OrderServiceImplTest test
+Via IDE (IntelliJ / Eclipse)Navegue até a pasta src/test/java.Clique com o botão direito na pasta ou em um arquivo específico.Selecione "Run Tests" ou "Run 'All Tests'".✅ Resumo da CoberturaMóduloCamadaStatusO que é testado?OrdersService✅Criação, Cancelamento, Estorno de Estoque e Integração com Cupom.InventoryService/Repo✅Movimentações (ENTRY/EXIT), Exceção de saldo insuficiente e Queries de histórico.CartService✅Adição de itens, soma de quantidades e limpeza pós-venda.ReviewsController/Service✅Endpoint de criação, regra de compra verificada e cálculo de rating.ReportsController✅Endpoints administrativos e parâmetros de data.CouponsUnit✅Lógica de expiração, limite de uso e valor mínimo.
+### Próximo Passo
+Rode o comando para adicionar o arquivo ao Git:

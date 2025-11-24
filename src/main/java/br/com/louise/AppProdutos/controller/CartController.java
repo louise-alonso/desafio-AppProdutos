@@ -3,12 +3,14 @@ package br.com.louise.AppProdutos.controller;
 import br.com.louise.AppProdutos.dto.cart.DTOCartItemRequest;
 import br.com.louise.AppProdutos.dto.cart.DTOCartResponse;
 import br.com.louise.AppProdutos.service.CartService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/cart")
 @RequiredArgsConstructor
+@Tag(name = "06. Carrinho de Compras")
 public class CartController {
 
     private final CartService cartService;

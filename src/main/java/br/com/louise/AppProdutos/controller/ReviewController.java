@@ -3,6 +3,7 @@ package br.com.louise.AppProdutos.controller;
 import br.com.louise.AppProdutos.dto.review.DTOReviewRequest;
 import br.com.louise.AppProdutos.dto.review.DTOReviewResponse;
 import br.com.louise.AppProdutos.service.ReviewService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid; // <--- Import
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/reviews")
 @RequiredArgsConstructor
+@Tag(name = "08. Avaliações (Reviews)")
 public class ReviewController {
 
     private final ReviewService reviewService;

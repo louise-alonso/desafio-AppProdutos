@@ -3,6 +3,7 @@ package br.com.louise.AppProdutos.controller;
 import br.com.louise.AppProdutos.dto.product.DTOProductRequest;
 import br.com.louise.AppProdutos.dto.product.DTOProductResponse;
 import br.com.louise.AppProdutos.service.ProductService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
+@Tag(name = "03. Produtos")
 @RequiredArgsConstructor
 public class ProductController {
 

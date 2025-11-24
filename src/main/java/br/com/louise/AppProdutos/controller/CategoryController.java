@@ -3,6 +3,7 @@ package br.com.louise.AppProdutos.controller;
 import br.com.louise.AppProdutos.dto.category.DTOCategoryRequest;
 import br.com.louise.AppProdutos.dto.category.DTOCategoryResponse;
 import br.com.louise.AppProdutos.service.CategoryService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/categories")
 @RequiredArgsConstructor
+@Tag(name = "02. Categorias")
 public class CategoryController {
 
     private final CategoryService categoryService;

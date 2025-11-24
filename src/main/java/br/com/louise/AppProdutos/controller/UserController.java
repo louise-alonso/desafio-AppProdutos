@@ -1,11 +1,10 @@
 package br.com.louise.AppProdutos.controller;
 
-// --- NOVOS IMPORTS ---
 import br.com.louise.AppProdutos.dto.user.DTOUserRequest;
 import br.com.louise.AppProdutos.dto.user.DTOUserResponse;
-// ---------------------
 
 import br.com.louise.AppProdutos.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,8 +16,9 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
+@RequestMapping("/admin") // ou sua rota base
 @RequiredArgsConstructor
-@RequestMapping("/admin")
+@Tag(name = "01. Autenticação e Usuários")
 public class UserController {
 
     private final UserService userService;

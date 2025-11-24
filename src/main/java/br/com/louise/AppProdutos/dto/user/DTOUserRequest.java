@@ -1,5 +1,6 @@
 package br.com.louise.AppProdutos.dto.user;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -13,18 +14,21 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DTOUserRequest {
-    @NotBlank(message = "O email é obrigatório")
-    @Email(message = "Formato de email inválido")
+
+    @Schema(description = "Email do usuário", example = "admin@loja.com")
+    @NotBlank
+    @Email
     private String email;
 
-    @NotBlank(message = "A senha é obrigatória")
-    @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres")
+    @Schema(description = "Senha segura", example = "123456")
+    @NotBlank
+    @Size(min = 6)
     private String password;
 
-    @NotBlank(message = "O nome é obrigatório")
+    @Schema(description = "Nome completo", example = "Administrador do Sistema")
+    @NotBlank
     private String name;
 
+    @Schema(description = "Perfil de acesso (ADMIN, SELLER, CUSTOMER)", example = "ADMIN")
     private String role;
-
-    
 }

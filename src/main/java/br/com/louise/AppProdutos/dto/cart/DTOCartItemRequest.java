@@ -1,5 +1,6 @@
 package br.com.louise.AppProdutos.dto.cart;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,10 +9,12 @@ import lombok.Data;
 @Data
 public class DTOCartItemRequest {
 
-    @NotBlank(message = "O ID do produto é obrigatório")
+    @Schema(description = "ID do produto a adicionar", example = "ID_DO_PRODUTO_AQUI")
+    @NotBlank
     private String productId;
 
-    @NotNull(message = "A quantidade é obrigatória")
-    @Min(value = 1, message = "A quantidade deve ser no mínimo 1")
+    @Schema(description = "Quantidade", example = "2")
+    @NotNull
+    @Min(1)
     private Integer quantity;
 }

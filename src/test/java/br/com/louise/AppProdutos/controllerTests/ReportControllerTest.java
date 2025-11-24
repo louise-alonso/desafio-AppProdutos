@@ -13,6 +13,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal; // <--- IMPORT NOVO
+import java.time.LocalDate;  // <--- IMPORT NOVO
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -32,7 +34,15 @@ class ReportControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void getSalesReport_ShouldReturnOk() throws Exception {
-        when(reportService.getSalesReport(any(), any())).thenReturn(List.of(new DTOSalesReport()));
+        // --- CORREÇÃO AQUI: Criando o objeto com os dados obrigatórios ---
+        DTOSalesReport reportMock = new DTOSalesReport(
+                LocalDate.now(),       // Data
+                10L,                   // Quantidade
+                new BigDecimal("500.00") // Total
+        );
+
+        when(reportService.getSalesReport(any(), any())).thenReturn(List.of(reportMock));
+        // -------------------------------------------------------------------
 
         mockMvc.perform(get("/reports/sales")
                         .param("start", "2023-01-01")

@@ -4,6 +4,7 @@ import br.com.louise.AppProdutos.dto.report.DTOSalesReport;
 import br.com.louise.AppProdutos.dto.report.DTOTopProduct;
 import br.com.louise.AppProdutos.model.ProductEntity;
 import br.com.louise.AppProdutos.service.ReportService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/reports")
 @RequiredArgsConstructor
+@Tag(name = "09. Relatórios e Auditoria")
 public class ReportController {
 
     private final ReportService reportService;
