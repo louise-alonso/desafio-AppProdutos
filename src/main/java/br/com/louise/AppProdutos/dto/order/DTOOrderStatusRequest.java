@@ -1,4 +1,4 @@
-package br.com.louise.AppProdutos.dto;
+package br.com.louise.AppProdutos.dto.order;
 
 import br.com.louise.AppProdutos.model.OrderStatus;
 import lombok.Data;

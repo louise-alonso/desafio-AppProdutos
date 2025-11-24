@@ -1,7 +1,7 @@
 package br.com.louise.AppProdutos.model;
 
-import br.com.louise.AppProdutos.dto.DTOPaymentDetails;
-import br.com.louise.AppProdutos.dto.PaymentMethod;
+import br.com.louise.AppProdutos.dto.payment.DTOPaymentDetails;
+import br.com.louise.AppProdutos.dto.payment.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,7 +35,6 @@ public class OrderEntity {
     @JoinColumn(name = "customer_id", nullable = false)
     private UserEntity customer;
 
-    // Coluna principal 'status' do Pedido
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
@@ -61,20 +60,19 @@ public class OrderEntity {
     @JoinColumn(name ="order_id")
     private List<OrderProductEntity> products= new ArrayList<>();
 
-    // --- CORREÇÃO CRÍTICA: RESOLVE O CONFLITO DA COLUNA 'status' ---
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "status", column = @Column(name = "payment_status_detail"))
     })
     private DTOPaymentDetails paymentDetails;
-    // ------------------------------------------------------------------
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
-    @PrePersist
-    protected void onCreate(){
-        // Esta lógica de geração de orderId foi mantida, apesar de redundante com o @Builder.Default UUID
-        this.orderId ="ORD"+System.currentTimeMillis();
-    }
+    // --- NOVOS CAMPOS PARA O MÓDULO DE PROMOÇÕES ---
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal discount; // Valor monetário descontado
+
+    private String appliedCoupon; // Código do cupom usado (ex: "NATAL10")
 }

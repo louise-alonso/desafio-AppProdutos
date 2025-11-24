@@ -1,340 +1,117 @@
 # API.md - Guia de Referência da API
 
-Este documento lista e descreve todos os endpoints da **AppProdutos API**, incluindo rotas, métodos, bodies esperados, respostas e requisitos de permissão (RBAC).
-
-Prefixos:
-- Rotas públicas → sem prefixo
-- Rotas de autenticação → `/auth`
-- Rotas administrativas → `/admin`
-
 ---------------------------------------------------------------------
 
 ## AUTENTICAÇÃO (DUAL TOKEN)
 
 ### POST /auth/login
-Autentica usuário e inicia sessão.
+Autentica usuário e inicia sessão. Retorna `accessToken` e `refreshToken`.
 
-Body (JSON):
-{
-"email": "string",
-"password": "string"
-}
-
-Resposta (200):
-{
-"accessToken": "string (JWT - 1 hora)",
-"refreshToken": "string (UUID - 30 dias)",
-"email": "string",
-"role": "string"
-}
-
-Permissão: Público
----
-
-### POST /auth/refresh
-Renova o Access Token usando um Refresh Token válido.
-
-Body (JSON):
-{
-"refreshToken": "string (UUID)"
-}
-
-Resposta (200):
-{
-"accessToken": "string (Novo JWT)",
-"refreshToken": "string (UUID mantido)",
-"email": "string",
-"role": "string"
-}
-
-Permissão: Público
-
----
-
-### GET /auth/me
-Retorna os dados do usuário logado (para validação de token).
-
-Resposta (200):
-"Usuário autenticado: {email}"
-
-Permissão: Autenticado (Qualquer perfil)
 ---------------------------------------------------------------------
 
-## USUÁRIOS E CADASTRO
+## PROMOÇÕES E CUPONS 🆕
 
-### POST /admin/register
-Cria um novo usuário no sistema.
-*Nota: Endpoint público para permitir o primeiro acesso (Bootstrap).*
+### POST /coupons
+Cria um novo cupom de desconto.
 
 Body (JSON):
 {
-"name": "string",
-"email": "string",
-"password": "string",
-"role": "ADMIN | SELLER | CUSTOMER"
+"code": "string (ex: NATAL10)",
+"type": "PERCENTAGE | FIXED",
+"value": number,
+"expirationDate": "YYYY-MM-DD",
+"globalUsageLimit": integer (opcional),
+"usageLimitPerUser": integer (opcional),
+"minOrderValue": number (opcional),
+"targetProductId": "string (UUID) (opcional)"
 }
 
 Resposta (201):
 {
-"userId": "string (UUID)",
-"name": "string",
-"email": "string",
-"role": "string"
+"id": number,
+"code": "NATAL10",
+"active": true
 }
 
-Permissão: Público
-
----
-
-### GET /admin/users
-Lista todos os usuários cadastrados.
-
-Resposta (200):
-[
-{
-"userId": "string (UUID)",
-"name": "string",
-"email": "string",
-"role": "string"
-}
-]
-
-Permissão: ROLE_ADMIN
-
----
-
-### PUT /admin/users/{userId}
-Atualiza dados de um usuário existente.
-
-Body (JSON):
-{
-"name": "string",
-"email": "string",
-"password": "string (opcional)",
-"role": "ADMIN | SELLER | CUSTOMER"
-}
-
-Resposta (200):
-{
-"userId": "string (UUID)",
-"name": "string",
-"email": "string",
-"role": "string"
-}
-
-Permissão: ROLE_ADMIN
-
----
-
-### DELETE /admin/users/{userId}
-Remove um usuário do sistema.
-
-Resposta: 204 No Content  
 Permissão: ROLE_ADMIN
 
 ---------------------------------------------------------------------
 
-## CATEGORIAS (CATÁLOGO PLANO)
+## PEDIDOS (CHECKOUT)
 
-### POST /admin/categories
-Cria categoria.
+### POST /orders
+Finaliza a compra. Transforma os itens do Carrinho em um Pedido.
 
 Body (JSON):
 {
-"name": "string",
-"description": "string"
+"customerName": "string (opcional)",
+"phoneNumber": "string",
+"paymentMethod": "PIX | BOLETO",
+"couponCode": "string (opcional)"  <-- CAMPO NOVO
 }
 
 Regras:
-- `parentId` é proibido (categoria é sempre raiz)
+- O carrinho não pode estar vazio.
+- Se `couponCode` for enviado, valida validade, limites e aplica desconto.
+- Baixa o estoque atomicamente.
 
 Resposta (201):
 {
-"categoryId": "string (UUID)",
-"name": "string",
-"description": "string"
+"orderId": "string (UUID)",
+"status": "CREATED | PAID",
+"grandTotal": number,
+"products": [...]
 }
 
-Permissão: ROLE_ADMIN
-
----
-
-### GET /categories
-Lista todas as categorias.
-
-Resposta (200):
-[
-{
-"categoryId": "string (UUID)",
-"name": "string",
-"description": "string"
-}
-]
-
-Permissão: Público
-
----
-
-### GET /categories/{categoryId}
-Retorna categoria por ID.
-
-Resposta (200):
-{
-"categoryId": "string (UUID)",
-"name": "string",
-"description": "string"
-}
-
-Permissão: Público
-
----
-
-### PUT /admin/categories/{categoryId}
-Atualiza categoria.
-
-Body (JSON):
-{
-"name": "string",
-"description": "string"
-}
-
-Resposta (200):
-{
-"categoryId": "string (UUID)",
-"name": "string",
-"description": "string"
-}
-
-Permissão: ROLE_ADMIN
-
----
-
-### DELETE /admin/categories/{categoryId}
-Remove categoria.
-
-Regras:
-- Retorna 400 Bad Request se houver produtos vinculados.
-
-Resposta: 204 No Content  
-Permissão: ROLE_ADMIN
+Permissão: ROLE_CUSTOMER
 
 ---------------------------------------------------------------------
 
-## PRODUTOS (SKU ÚNICO + OWNER)
+## AVALIAÇÕES (REVIEWS) 🆕
 
-### POST /admin/products
-Cria produto.
+### POST /reviews
+Cria uma avaliação para um produto comprado.
 
 Body (JSON):
 {
-"name": "string",
-"sku": "string",
-"price": number,
-"stockQuantity": number,
-"categoryId": "string (UUID)"
+"productId": "string (UUID)",
+"orderId": "string (UUID)",
+"rating": integer (1-5),
+"comment": "string (max 500 chars)"
 }
 
 Regras:
-- SKU deve ser único
-- owner = usuário autenticado
+- O usuário deve ter comprado o produto.
+- O pedido deve estar com status `PAID`, `SHIPPED` ou `DELIVERED`.
+- Limite de 1 avaliação por produto por pedido.
 
 Resposta (201):
 {
-"productId": "string (UUID)",
-"name": "string",
-"sku": "string",
-"price": number,
-"stockQuantity": number,
-"ownerId": "string (UUID)",
-"categoryId": "string (UUID)"
+"id": number,
+"userName": "string",
+"rating": number,
+"comment": "string",
+"createdAt": "timestamp"
 }
 
-Permissão: ROLE_ADMIN ou ROLE_SELLER
+Permissão: ROLE_CUSTOMER
 
 ---
 
-### GET /products
-Lista todos os produtos públicos.
+### GET /reviews/product/{productId}
+Lista todas as avaliações de um produto específico.
 
 Resposta (200):
 [
 {
-"productId": "string (UUID)",
-"name": "string",
-"sku": "string",
-"price": number
+"id": number,
+"userName": "string",
+"rating": number,
+"comment": "string",
+"createdAt": "timestamp"
 }
 ]
 
 Permissão: Público
-
----
-
-### GET /products/{productId}
-Detalhes de um produto.
-
-Resposta (200):
-{
-"productId": "string (UUID)",
-"name": "string",
-"sku": "string",
-"price": number,
-"stockQuantity": number,
-"categoryId": "string (UUID)",
-"ownerId": "string (UUID)"
-}
-
-Permissão: Público
-
----
-
-### PUT /admin/products/{productId}
-Atualiza produto.
-
-Body (JSON):
-{
-"name": "string",
-"sku": "string",
-"price": number,
-"stockQuantity": number,
-"categoryId": "string (UUID)"
-}
-
-Regras:
-- ADMIN pode editar qualquer produto
-- SELLER só pode editar produtos onde é owner
-
-Resposta (200):
-{
-"productId": "string (UUID)",
-"name": "string",
-"price": number,
-"stockQuantity": number
-}
-
-Permissão: ROLE_ADMIN ou ROLE_SELLER (se owner)
-
----
-
-### DELETE /admin/products/{productId}
-Remove produto.
-
-Regras:
-- SELLER só pode remover se for owner
-
-Resposta: 204 No Content  
-Permissão: ROLE_ADMIN ou ROLE_SELLER (se owner)
-
----------------------------------------------------------------------
-
-## CÓDIGOS DE STATUS (PADRÃO)
-
-200 OK → Sucesso geral  
-201 Created → Recurso criado  
-204 No Content → Exclusão bem-sucedida  
-400 Bad Request → Violação de regra (SKU duplicado, email duplicado, parentId enviado, violação de integridade)  
-401 Unauthorized → Token ausente ou inválido  
-403 Forbidden → Sem permissão para acessar o recurso  
-404 Not Found → ID não encontrado
 
 ---------------------------------------------------------------------

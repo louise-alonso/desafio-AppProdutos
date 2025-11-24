@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OrderRequest {
+public class DTOOrderRequest {
 
     // Informações opcionais de contato (caso sejam diferentes do cadastro do usuário)
     private String customerName;

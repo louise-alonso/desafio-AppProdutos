@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OrderResponse {
+public class DTOOrderResponse {
     private String orderId;
     private String customerEmail;
     private OrderStatus status;
