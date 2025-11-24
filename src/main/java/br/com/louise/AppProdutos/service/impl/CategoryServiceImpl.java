@@ -1,23 +1,21 @@
 package br.com.louise.AppProdutos.service.impl;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
+import br.com.louise.AppProdutos.dto.category.DTOCategoryRequest;
+import br.com.louise.AppProdutos.dto.category.DTOCategoryResponse;
+import br.com.louise.AppProdutos.model.CategoryEntity;
+import br.com.louise.AppProdutos.repository.CategoryRepository;
 import br.com.louise.AppProdutos.repository.ProductRepository;
+import br.com.louise.AppProdutos.service.CategoryService;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import br.com.louise.AppProdutos.dto.DTOCategoryRequest;
-import br.com.louise.AppProdutos.dto.DTOCategoryResponse;
-
-import br.com.louise.AppProdutos.model.CategoryEntity;
-import br.com.louise.AppProdutos.repository.CategoryRepository;
-import br.com.louise.AppProdutos.service.CategoryService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,12 +28,14 @@ public class CategoryServiceImpl implements CategoryService {
     public DTOCategoryResponse add(DTOCategoryRequest request) {
         CategoryEntity newCategory = convertToEntity(request);
 
-        if (request.getParentId() != null && !request.getParentId().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Esta aplicação não permite hierarquia entre categorias. A categoria deve ser um nó Raiz.");
+        // --- LÓGICA DE HIERARQUIA (PAI -> FILHO) ---
+        if (request.getParentId() != null && !request.getParentId().isBlank()) {
+            CategoryEntity parent = categoryRepository.findByCategoryId(request.getParentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Categoria pai não encontrada: " + request.getParentId()));
+            newCategory.setParent(parent);
         }
 
         newCategory = categoryRepository.save(newCategory);
-
         return convertToResponse(newCategory);
     }
 
@@ -62,13 +62,37 @@ public class CategoryServiceImpl implements CategoryService {
 
         try {
             categoryRepository.delete(existingCategory);
-
         } catch (DataIntegrityViolationException e) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Não é possível deletar. A categoria possui produtos ou subcategorias associadas."
             );
         }
+    }
+
+    @Override
+    public DTOCategoryResponse update(String categoryId, DTOCategoryRequest request) {
+        CategoryEntity existingCategory = categoryRepository.findByCategoryId(categoryId)
+                .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada para atualização: " + categoryId));
+
+        existingCategory.setName(request.getName());
+        existingCategory.setDescription(request.getDescription());
+
+        // Atualizar hierarquia se necessário
+        if (request.getParentId() != null && !request.getParentId().isBlank()) {
+            // Evitar ciclo (uma categoria não pode ser pai dela mesma)
+            if(request.getParentId().equals(categoryId)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Uma categoria não pode ser pai de si mesma.");
+            }
+            CategoryEntity parent = categoryRepository.findByCategoryId(request.getParentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Categoria pai não encontrada"));
+            existingCategory.setParent(parent);
+        } else {
+            existingCategory.setParent(null); // Remove o pai se vier nulo
+        }
+
+        existingCategory = categoryRepository.save(existingCategory);
+        return convertToResponse(existingCategory);
     }
 
     private CategoryEntity convertToEntity(DTOCategoryRequest request) {
@@ -80,34 +104,16 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private DTOCategoryResponse convertToResponse(CategoryEntity category) {
-
-        // CORREÇÃO: Passe o objeto 'category', não o ID
         Integer productsCount = productRepository.countByCategory(category);
 
         return DTOCategoryResponse.builder()
                 .categoryId(category.getCategoryId())
                 .name(category.getName())
                 .description(category.getDescription())
-                .products(productsCount) // Agora vai funcionar
+                .products(productsCount)
                 .parentName(category.getParent() != null ? category.getParent().getName() : null)
                 .createdAt(category.getCreatedAt())
                 .updatedAt(category.getUpdatedAt())
                 .build();
-    }
-
-    public DTOCategoryResponse update(String categoryId, DTOCategoryRequest request) {
-        CategoryEntity existingCategory = categoryRepository.findByCategoryId(categoryId)
-                .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada para atualização: " + categoryId));
-
-        if (request.getParentId() != null && !request.getParentId().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Esta aplicação não permite hierarquia entre categorias. O campo 'parentId' deve ser omitido.");
-        }
-
-        existingCategory.setName(request.getName());
-        existingCategory.setDescription(request.getDescription());
-
-        existingCategory = categoryRepository.save(existingCategory);
-
-        return convertToResponse(existingCategory);
     }
 }

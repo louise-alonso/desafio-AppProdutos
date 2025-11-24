@@ -1,20 +1,17 @@
 package br.com.louise.AppProdutos.controller;
 
-import java.util.List;
-
+import br.com.louise.AppProdutos.dto.category.DTOCategoryRequest;
+import br.com.louise.AppProdutos.dto.category.DTOCategoryResponse;
+import br.com.louise.AppProdutos.service.CategoryService;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import org.springframework.web.server.ResponseStatusException;
 
-import br.com.louise.AppProdutos.dto.DTOCategoryRequest;
-import br.com.louise.AppProdutos.dto.DTOCategoryResponse;
-import br.com.louise.AppProdutos.service.CategoryService;
-
-
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 @RestController
 @RequestMapping("/categories")
@@ -23,52 +20,50 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    @PostMapping ("/admin/categories")
+    // POST /categories (Requer ADMIN)
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
-    public DTOCategoryResponse addCategory(@RequestBody DTOCategoryRequest request) {
+    public DTOCategoryResponse addCategory(@RequestBody @Valid DTOCategoryRequest request) {
         return categoryService.add(request);
     }
 
-    @GetMapping("/categories")
+    // GET /categories (Público, conforme SecurityConfig)
+    @GetMapping
     public List<DTOCategoryResponse> fetchCategories() {
         return categoryService.read();
     }
 
-    @GetMapping("/categories/{categoryId}")
+    // GET /categories/{id} (Público)
+    @GetMapping("/{categoryId}")
     public DTOCategoryResponse fetchCategoryById(@PathVariable String categoryId) {
         try {
             return categoryService.readById(categoryId);
         } catch (EntityNotFoundException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Categoria não encontrada"
-            );
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoria não encontrada");
         }
     }
 
-    @DeleteMapping("/admin/categories/{categoryId}")
+    // DELETE /categories/{id} (Requer ADMIN)
+    @DeleteMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteCategory(@PathVariable String categoryId) {
         try {
             categoryService.delete(categoryId);
         } catch (EntityNotFoundException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, e.getMessage()
-            );
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
 
-    @PutMapping("/admin/categories/{categoryId}")
+    // PUT /categories/{id} (Requer ADMIN)
+    @PutMapping("/{categoryId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public DTOCategoryResponse updateCategory(@PathVariable String categoryId, @RequestBody DTOCategoryRequest request) {
+    public DTOCategoryResponse updateCategory(@PathVariable String categoryId, @RequestBody @Valid DTOCategoryRequest request) {
         try {
             return categoryService.update(categoryId, request);
         } catch (EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
-
 }
