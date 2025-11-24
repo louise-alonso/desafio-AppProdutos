@@ -1,4 +1,4 @@
-package br.com.louise.AppProdutos.dto.dto.auth;
+package br.com.louise.AppProdutos.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

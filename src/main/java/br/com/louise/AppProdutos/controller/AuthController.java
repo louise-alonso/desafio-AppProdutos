@@ -1,11 +1,14 @@
 package br.com.louise.AppProdutos.controller;
 
-import br.com.louise.AppProdutos.dto.DTOAuthRequest;
-import br.com.louise.AppProdutos.dto.DTOAuthResponse;
-import br.com.louise.AppProdutos.dto.DTORefreshTokenRequest;
+// --- NOVOS IMPORTS CORRETOS ---
+import br.com.louise.AppProdutos.dto.auth.DTOAuthRequest;
+import br.com.louise.AppProdutos.dto.auth.DTOAuthResponse;
+import br.com.louise.AppProdutos.dto.auth.DTORefreshTokenRequest;
+// ------------------------------
+
 import br.com.louise.AppProdutos.model.RefreshTokenEntity;
 import br.com.louise.AppProdutos.service.TokenService;
-import br.com.louise.AppProdutos.service.impl.AppUserDetailsService;
+import br.com.louise.AppProdutos.service.AppUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,17 +28,13 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<DTOAuthResponse> login(@RequestBody DTOAuthRequest request) {
-        // 1. Autentica
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
 
-        // 2. Gera Access Token
         String accessToken = tokenService.generateAccessToken(userDetails);
-
-        // 3. Gera Refresh Token
         RefreshTokenEntity refreshToken = tokenService.createRefreshToken(userDetails.getUsername());
 
         String role = userDetails.getAuthorities().iterator().next().getAuthority();
@@ -56,10 +55,7 @@ public class AuthController {
                 .map(tokenService::verifyExpiration)
                 .map(RefreshTokenEntity::getUser)
                 .map(user -> {
-                    // Carrega UserDetails
                     UserDetails userDetails = appUserDetailsService.loadUserByUsername(user.getEmail());
-
-                    // Gera NOVO Access Token
                     String token = tokenService.generateAccessToken(userDetails);
 
                     return ResponseEntity.ok(DTOAuthResponse.builder()
@@ -69,6 +65,11 @@ public class AuthController {
                             .role(user.getRole())
                             .build());
                 })
-                .orElseThrow(() -> new RuntimeException("Refresh token não encontrado no banco!"));
+                .orElseThrow(() -> new RuntimeException("Refresh token não encontrado ou inválido!"));
+    }
+
+    @GetMapping("/me")
+    public String getMe(Authentication authentication) {
+        return "Usuário autenticado: " + authentication.getName();
     }
 }
