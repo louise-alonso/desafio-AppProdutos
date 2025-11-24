@@ -1,4 +1,4 @@
-package br.com.louise.AppProdutos.dto;
+package br.com.louise.AppProdutos.dto.cart;
 
 import lombok.Builder;
 import lombok.Data;
