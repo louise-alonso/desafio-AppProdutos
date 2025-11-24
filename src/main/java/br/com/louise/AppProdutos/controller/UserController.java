@@ -2,8 +2,8 @@ package br.com.louise.AppProdutos.controller;
 
 import br.com.louise.AppProdutos.dto.user.DTOUserRequest;
 import br.com.louise.AppProdutos.dto.user.DTOUserResponse;
-
 import br.com.louise.AppProdutos.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,21 +16,23 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin") // ou sua rota base
+@RequestMapping("/admin")
 @RequiredArgsConstructor
-@Tag(name = "01. Autenticação e Usuários")
+@Tag(name = "01. Autenticação e Usuários", description = "Gestão de contas e acesso")
 public class UserController {
 
     private final UserService userService;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Criar utilizador", description = "Regista um novo utilizador no sistema (ADMIN, SELLER ou CUSTOMER). Endpoint público.")
     public DTOUserResponse registerUser(@RequestBody @Valid DTOUserRequest request) {
         return userService.createUser(request);
     }
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Listar utilizadores", description = "Lista todos os utilizadores cadastrados. Exclusivo para ADMIN.")
     public List<DTOUserResponse> readUsers() {
         return userService.readUsers();
     }
@@ -38,6 +40,7 @@ public class UserController {
     @DeleteMapping("/users/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Excluir utilizador", description = "Remove um utilizador do sistema pelo ID.")
     public void deleteUser(@PathVariable String id) {
         try {
             userService.deleteUser(id);
@@ -48,6 +51,7 @@ public class UserController {
 
     @PutMapping("/users/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Atualizar utilizador", description = "Altera dados cadastrais de um utilizador.")
     public DTOUserResponse updateUsers(@PathVariable String id, @RequestBody DTOUserRequest request) {
         try {
             return userService.updateUser(id, request);

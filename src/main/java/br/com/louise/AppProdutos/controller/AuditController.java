@@ -2,6 +2,7 @@ package br.com.louise.AppProdutos.controller;
 
 import br.com.louise.AppProdutos.model.AuditLogEntity;
 import br.com.louise.AppProdutos.service.AuditService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +20,7 @@ public class AuditController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Consultar logs de auditoria", description = "Lista o histórico de alterações de uma entidade (ex: Product). Requer perfil ADMIN.")
     public List<AuditLogEntity> getAuditLogs(@RequestParam(defaultValue = "Product") String entity) {
         return auditService.getLogsByEntity(entity);
     }

@@ -1,11 +1,8 @@
 package br.com.louise.AppProdutos.controller;
 
-// --- NOVOS IMPORTS CORRETOS ---
 import br.com.louise.AppProdutos.dto.auth.DTOAuthRequest;
 import br.com.louise.AppProdutos.dto.auth.DTOAuthResponse;
 import br.com.louise.AppProdutos.dto.auth.DTORefreshTokenRequest;
-// ------------------------------
-
 import br.com.louise.AppProdutos.model.RefreshTokenEntity;
 import br.com.louise.AppProdutos.security.TokenService;
 import br.com.louise.AppProdutos.security.AppUserDetailsService;
@@ -31,7 +28,7 @@ public class AuthController {
     private final TokenService tokenService;
     private final AppUserDetailsService appUserDetailsService;
 
-    @Operation(summary = "Realizar Login", description = "Autentica o usuário e retorna os tokens de acesso (Access Token) e renovação (Refresh Token).")
+    @Operation(summary = "Realizar Login", description = "Autentica o utilizador e retorna os tokens de acesso (Access Token) e renovação (Refresh Token).")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Login realizado com sucesso"),
             @ApiResponse(responseCode = "403", description = "Email ou senha inválidos")
@@ -80,6 +77,7 @@ public class AuthController {
     }
 
     @GetMapping("/me")
+    @Operation(summary = "Dados do utilizador", description = "Retorna o nome do utilizador autenticado (útil para validar se o token está a funcionar).")
     public String getMe(Authentication authentication) {
         return "Usuário autenticado: " + authentication.getName();
     }
