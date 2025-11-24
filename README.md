@@ -1,120 +1,105 @@
-# AppProdutos - E-commerce API (Evolution Project)
+# AppProdutos - API de E-commerce Backend
 
-Este projeto é a evolução de uma API REST de produtos, transformando-a em um sistema de E-commerce completo. O foco principal é a aplicação de conceitos avançados de **Java 21**, **Spring Boot 3**, **Segurança (JWT) com RBAC granular** e **Regras de Negócio Complexas**.
+![Java](https://img.shields.io/badge/Java-21-orange)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2+-green)
+![Security](https://img.shields.io/badge/JWT-Auth-blue)
+![Swagger](https://img.shields.io/badge/Swagger-UI-brightgreen)
 
----
+API RESTful completa para gerenciamento de um sistema de E-commerce, incluindo controle de estoque, fluxo de pedidos, sistema de cupons, avaliações e relatórios gerenciais.
 
-## Visão Geral e Arquitetura
+## Funcionalidades Principais
 
-O **AppProdutos** utiliza uma arquitetura em camadas e segue rigorosamente os princípios RESTful, com validação de dados e controle de acesso em nível de método.
+* **Autenticação e Segurança:** Login via JWT (Access e Refresh Token), Criptografia de senhas (BCrypt) e Controle de Acesso baseado em Roles (ADMIN, SELLER, CUSTOMER).
+* **Gestão de Produtos:** CRUD completo, Hierarquia de Categorias e upload de imagens (placeholder).
+* **Controle de Estoque:** Auditoria de movimentações (Entrada/Saída/Ajuste) e prevenção de venda sem estoque.
+* **Carrinho de Compras:** Gestão de itens, cálculo de subtotal e limpeza automática pós-venda.
+* **Fluxo de Pedidos:** Checkout, Integração simulada com gateways (Razorpay), Cancelamento com estorno de estoque.
+* **Cupons de Desconto:** Validação complexa (validade, limite global, limite por usuário, valor mínimo, categorias específicas).
+* **Avaliações (Reviews):** Apenas usuários que compraram e receberam o produto podem avaliar (Verified Purchase).
+* **Auditoria e Relatórios:** Logs de alterações em entidades e relatórios de vendas/produtos mais vendidos.
 
-### Tecnologias Principais
+## Tecnologias Utilizadas
 
-| Categoria | Tecnologia | Versão | Notas |
-| :--- | :--- | :--- | :--- |
-| **Linguagem** | Java | 21 | Foco em features modernas da linguagem. |
-| **Framework** | Spring Boot | 3.5.7 | Utilizando as especificações Jakarta EE. |
-| **Segurança** | Spring Security + **Auth0 JWT** | 6.x / 4.4.0 | Autenticação via **Access Token** e **Refresh Token**. |
-| **Persistência** | Spring Data JPA | N/A | Abstração da camada de dados. |
-| **Banco de Dados** | H2 Database | N/A | Banco em memória para ambiente de desenvolvimento. |
+* **Java 21**
+* **Spring Boot 3** (Web, Data JPA, Security, Validation)
+* **Banco de Dados:** H2 Database (Memória/Dev)
+* **Migrations:** Flyway
+* **Documentação:** OpenAPI / Swagger UI
+* **Utils:** Lombok, JWT (Auth0)
+* **Testes:** JUnit 5, Mockito
 
----
+##  Como Rodar o Projeto
 
-## Como Configurar e Rodar
+### Pré-requisitos
+* Java JDK 21 instalado
+* Maven instalado
 
-### 1. Configuração Local
-
-1.  Clone o repositório.
-2.  Execute o comando Maven para baixar as dependências:
+### Passos
+1.  **Clone o repositório:**
     ```bash
-    mvn clean install
+    git clone [https://github.com/seu-usuario/AppProdutos.git](https://github.com/seu-usuario/AppProdutos.git)
+    cd AppProdutos
     ```
-3.  Rode a aplicação:
+
+2.  **Execute a aplicação:**
     ```bash
     mvn spring-boot:run
     ```
 
-### 2. Acesso e Credenciais Iniciais
+3.  **Acesse a Documentação (Swagger):**
+    Abra o navegador em: `http://localhost:8080/swagger-ui.html`
 
-O banco H2 é volátil (reinicia vazio). Siga este fluxo para o primeiro acesso:
+4.  **Acesse o Banco de Dados (H2 Console):**
+    * URL: `http://localhost:8080/h2-console`
+    * JDBC URL: `jdbc:h2:mem:produtosdb`
+    * User: `sa`
+    * Password: (deixe em branco)
 
-1.  **Console do Banco:** `http://localhost:8080/h2-console`
-    * URL JDBC: `jdbc:h2:mem:produtosdb`
-    * User: `sa` / Password: (vazia)
-2.  **Criar o Primeiro Admin (Via API):**
-    * Faça um `POST` em `/admin/register` com os dados do usuário e role `ADMIN`.
-3.  **Login:**
-    * Faça um `POST` em `/auth/login` para receber o par de chaves (`accessToken` e `refreshToken`).
-    
----
+## Como Testar (Fluxo Básico)
 
-## Status do Desenvolvimento (Core Business Logic)
+1.  **Criar Usuário Admin:**
+    * POST `/admin/register`
+    * Body: `{"email": "admin@test.com", "password": "123", "role": "ADMIN", "name": "Admin"}`
 
-### Funcionalidades Implementadas
+2.  **Login:**
+    * POST `/auth/login`
+    * Copie o `accessToken` da resposta.
 
-| Módulo | Funcionalidade Chave | Regras de Negócio |
-| :--- | :--- | :--- |
-| **Segurança & RBAC** | Autenticação **Dual-Token** (Access + Refresh). | **Access Token:** Validade curta (1h). **Refresh Token:** Validade longa (30 dias), persistido no banco e revogável. |
-| **Módulo Usuários** | Cadastro Público e Gestão de Usuários. | Validação de e-mail/login via Regex. O endpoint de registro é público para facilitar o setup inicial ("Ovo e a Galinha"). |
-| **Módulo Categorias** | CRUD Completo de Categorias. | **Hierarquia Plana Crítica:** Proibição de associação Pai/Filho entre categorias. |
-| **Módulo Produtos** | CRUD Completo de Produtos (`/admin/products`). | Bloqueio de **SKU Duplicado**. Produto obrigatoriamente associado a uma Categoria e um Proprietário (Seller). |
+3.  **Autorizar no Swagger:**
+    * Clique no botão **Authorize** (cadeado) no topo do Swagger.
+    * Cole o token. Agora você pode acessar rotas protegidas.
 
-### Perfis de Usuário e Permissões
+4.  **Criar Categoria e Produto:**
+    * POST `/categories`
+    * POST `/admin/products`
 
-| Perfil | Role | Permissão Chave |
-| :--- | :--- | :--- |
-| **Administrador** | `ROLE_ADMIN` | Acesso total (CRUD) a todos os módulos (Usuário, Categoria, Produto, etc.). |
-| **Vendedor** | `ROLE_SELLER` | Acesso para Criar, Atualizar e Deletar **APENAS seus produtos** (Regra de Dono). |
-| **Cliente** | `ROLE_CUSTOMER` | Acesso somente a rotas de Leitura (Catálogo). |
+## Documentação da API
 
----
+Principais Endpoints:
 
-## Roadmap de Evolução (Próximos Passos)
-
-O foco agora é na implementação dos módulos transacionais (Vendas e Inventário).
-
-### Prioridade 1: Módulo de Transações e Estoque
-* [ ] Implementação da entidade **`InventoryTransaction`** (Histórico de Movimentação).
-* [ ] Regra: Impedir vendas com estoque insuficiente.
-* [ ] Atualização automática do `stockQuantity` após movimentação.
-
-### Prioridade 2: Módulo de Vendas e Pedidos
-* [ ] Implementação de **Carrinho de Compras** persistente por usuário.
-* [ ] Fluxo completo de **Pedidos (Orders)** com gestão de status (`PAID`, `SHIPPED`, etc.).
-
----
-
-## Endpoints Principais da API
-
-### Módulo de Autenticação e Usuários
-
-| Método | Rota | Acesso | Descrição |
+| Módulo | Método | Endpoint | Descrição |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/admin/register` | **Público** | Criação de novos usuários (Admin, Seller, Customer). |
-| `POST` | `/auth/login` | **Público** | Login. Retorna `accessToken` (1h) e `refreshToken` (30d). |
-| `POST` | `/auth/refresh` | **Público** | Envia um `refreshToken` válido para receber um novo `accessToken`. |
-| `GET` | `/auth/me` | Autenticado | Retorna detalhes do usuário logado (para validação rápida). |
+| **Auth** | POST | `/auth/login` | Realiza login e retorna tokens |
+| **Auth** | POST | `/auth/refresh` | Renova o token de acesso |
+| **Users** | POST | `/admin/register` | Cria novo usuário |
+| **Products** | GET | `/products` | Lista produtos (Público) |
+| **Cart** | POST | `/cart/add` | Adiciona item ao carrinho |
+| **Orders** | POST | `/orders` | Finaliza compra (Checkout) |
+| **Inventory**| POST | `/inventory/adjust`| Ajuste manual de estoque |
+| **Reports** | GET | `/reports/sales` | Relatório de vendas (Admin) |
 
-### Módulo de Produtos e Categorias
+## Estrutura do Banco de Dados
 
-| Método | Rota | Acesso | Descrição |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/products` | Público | Lista todos os produtos (Catálogo). |
-| `GET` | `/categories` | Público | Lista todas as categorias. |
-| `GET` | `/products/{id}` | Público | Detalhes de um produto por ID. |
-
-### Módulo de Gestão (Rotas Protegidas)
-
-| Recurso | Método | Rota | Permissões |
-| :--- | :--- | :--- | :--- |
-| **Produto** | `POST` | `/admin/products` | `ROLE_ADMIN`, `ROLE_SELLER` |
-| **Produto** | `PUT`/`DELETE` | `/admin/products/{id}` | `ROLE_ADMIN` **OU** Dono do Produto |
-| **Categoria** | `POST`/`PUT`/`DELETE` | `/admin/categories` | `ROLE_ADMIN` |
+O projeto utiliza **Flyway** para versionamento. O Schema inicial inclui tabelas para:
+* `tbl_users`, `tbl_refresh_tokens`
+* `tbl_products`, `tbl_categories`
+* `tbl_inventory_transactions`, `tbl_audit_logs`
+* `tbl_orders`, `tbl_order_items`, `tbl_coupons`
+* `tbl_reviews`, `tbl_carts`
 
 ---
 
-##  Guias
+## Guias
 
- **[Guia de Testes e Validação (TESTING.md)](./TESTING.md)**
- 
- **[Guia de Referência da API (API.md)](./API.md)**
+**[Guia de Testes e Validação (TESTING.md)](./TESTING.md)**  
+**[Guia de Referência da API (API.md)](./API.md)**
