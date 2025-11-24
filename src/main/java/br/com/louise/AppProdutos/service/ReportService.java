@@ -1,7 +1,7 @@
 package br.com.louise.AppProdutos.service;
 
-import br.com.louise.AppProdutos.dto.DTOSalesReport;
-import br.com.louise.AppProdutos.dto.DTOTopProduct;
+import br.com.louise.AppProdutos.dto.report.DTOSalesReport;
+import br.com.louise.AppProdutos.dto.report.DTOTopProduct;
 import br.com.louise.AppProdutos.model.ProductEntity;
 import br.com.louise.AppProdutos.repository.OrderEntityRepository;
 import br.com.louise.AppProdutos.repository.OrderProductEntityRepository;
