@@ -3,7 +3,7 @@ package br.com.louise.AppProdutos.service.impl;
 import br.com.louise.AppProdutos.model.AuditLogEntity;
 import br.com.louise.AppProdutos.model.ProductEntity;
 import br.com.louise.AppProdutos.repository.AuditRepository;
-import br.com.louise.AppProdutos.service.AuditService;
+import br.com.louise.AppProdutos.service.impl.AuditServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -17,8 +17,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.math.BigDecimal;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -27,7 +25,7 @@ import static org.mockito.Mockito.*;
 class AuditServiceTest {
 
     @InjectMocks
-    private AuditService auditService;
+    private AuditServiceImpl auditService;
 
     @Mock private AuditRepository auditRepository;
     @Mock private ObjectMapper objectMapper;
@@ -66,17 +64,12 @@ class AuditServiceTest {
 
     @Test
     void log_ShouldNotThrowException_WhenSerializationFails() throws JsonProcessingException {
-        // Arrange
-        // Simula erro ao converter para JSON
         when(objectMapper.writeValueAsString(any())).thenThrow(new RuntimeException("Json Error"));
 
-        // Act & Assert
-        // O método não deve lançar exceção (deve capturar e logar no console)
         assertDoesNotThrow(() ->
                 auditService.log("ERROR", "Test", "1", new Object(), null)
         );
 
-        // Verifica que nada foi salvo no banco devido ao erro
         verify(auditRepository, never()).save(any());
     }
 }

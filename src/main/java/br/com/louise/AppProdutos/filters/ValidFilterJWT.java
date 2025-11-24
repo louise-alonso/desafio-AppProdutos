@@ -1,8 +1,8 @@
 package br.com.louise.AppProdutos.filters;
 
 import br.com.louise.AppProdutos.config.Constants;
-import br.com.louise.AppProdutos.service.TokenService;
-import br.com.louise.AppProdutos.service.AppUserDetailsService;
+import br.com.louise.AppProdutos.security.TokenService;
+import br.com.louise.AppProdutos.security.AppUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

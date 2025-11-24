@@ -7,8 +7,8 @@ import br.com.louise.AppProdutos.dto.auth.DTORefreshTokenRequest;
 // ------------------------------
 
 import br.com.louise.AppProdutos.model.RefreshTokenEntity;
-import br.com.louise.AppProdutos.service.TokenService;
-import br.com.louise.AppProdutos.service.AppUserDetailsService;
+import br.com.louise.AppProdutos.security.TokenService;
+import br.com.louise.AppProdutos.security.AppUserDetailsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

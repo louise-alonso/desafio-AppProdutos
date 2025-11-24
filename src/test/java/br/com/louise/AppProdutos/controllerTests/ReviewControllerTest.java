@@ -1,11 +1,11 @@
-package br.com.louise.AppProdutos.controller;
+package br.com.louise.AppProdutos.controllerTests;
 
 import br.com.louise.AppProdutos.controller.ReviewController;
 import br.com.louise.AppProdutos.dto.review.DTOReviewRequest;
 import br.com.louise.AppProdutos.dto.review.DTOReviewResponse;
 import br.com.louise.AppProdutos.service.ReviewService;
-import br.com.louise.AppProdutos.service.TokenService;
-import br.com.louise.AppProdutos.service.AppUserDetailsService;
+import br.com.louise.AppProdutos.security.TokenService;
+import br.com.louise.AppProdutos.security.AppUserDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

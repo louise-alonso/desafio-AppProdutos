@@ -1,4 +1,4 @@
-package br.com.louise.AppProdutos.service;
+package br.com.louise.AppProdutos.security;
 
 import br.com.louise.AppProdutos.config.Constants;
 import br.com.louise.AppProdutos.model.RefreshTokenEntity;

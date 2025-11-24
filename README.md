@@ -8,7 +8,7 @@
 
 API RESTful completa para gerenciamento de um sistema de E-commerce. O projeto foi desenvolvido com foco em **boas práticas, arquitetura limpa, segurança robusta e cobertura de testes**, atendendo a um conjunto rigoroso de regras de negócio.
 
-## Funcionalidades e Regras de Negócio
+##  Funcionalidades e Regras de Negócio
 
 O sistema implementa todas as regras de negócio propostas, garantindo consistência e segurança nas operações.
 
@@ -67,7 +67,7 @@ O sistema implementa todas as regras de negócio propostas, garantindo consistê
 
 ---
 
-## Documentação Interativa (Swagger)
+##  Documentação Interativa (Swagger)
 
 A API possui uma documentação completa e interativa.
 * **Guia Passo a Passo:** Tutorial integrado na página inicial do Swagger.
@@ -80,7 +80,7 @@ A API possui uma documentação completa e interativa.
 
 ---
 
-## Tecnologias Utilizadas
+## 🛠️ Tecnologias Utilizadas
 
 * **Java 21** & **Spring Boot 3**
 * **Spring Security** (JWT + OAuth2 Resource Server pattern)
@@ -92,7 +92,7 @@ A API possui uma documentação completa e interativa.
 
 ---
 
-## ️ Como Rodar o Projeto
+## ⚙️ Como Rodar o Projeto
 
 ### Pré-requisitos
 * Java JDK 21 instalado
@@ -114,9 +114,11 @@ A API possui uma documentação completa e interativa.
     * **Swagger (API):** `http://localhost:8080/swagger-ui.html`
     * **H2 Console (Banco):** `http://localhost:8080/h2-console`
 
-## Testes Automatizados
+## 🧪 Testes Automatizados
 
 O projeto conta com uma suíte robusta de testes cobrindo Controllers, Services e Repositories, garantindo que todas as regras de negócio acima estejam funcionando.
+
+📄 **Para detalhes técnicos sobre a estratégia de testes e mapa de endpoints, consulte o arquivo [TESTING.md](TESTING.md).**
 
 Para rodar os testes:
 ```bash

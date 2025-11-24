@@ -3,8 +3,8 @@ package br.com.louise.AppProdutos.controllerTests;
 import br.com.louise.AppProdutos.controller.ReportController;
 import br.com.louise.AppProdutos.dto.report.DTOSalesReport;
 import br.com.louise.AppProdutos.service.ReportService;
-import br.com.louise.AppProdutos.service.TokenService;
-import br.com.louise.AppProdutos.service.AppUserDetailsService;
+import br.com.louise.AppProdutos.security.TokenService;
+import br.com.louise.AppProdutos.security.AppUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -13,8 +13,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.math.BigDecimal; // <--- IMPORT NOVO
-import java.time.LocalDate;  // <--- IMPORT NOVO
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -34,15 +34,9 @@ class ReportControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void getSalesReport_ShouldReturnOk() throws Exception {
-        // --- CORREÇÃO AQUI: Criando o objeto com os dados obrigatórios ---
-        DTOSalesReport reportMock = new DTOSalesReport(
-                LocalDate.now(),       // Data
-                10L,                   // Quantidade
-                new BigDecimal("500.00") // Total
-        );
+        DTOSalesReport reportMock = new DTOSalesReport(LocalDate.now(), 10L, new BigDecimal("500.00"));
 
         when(reportService.getSalesReport(any(), any())).thenReturn(List.of(reportMock));
-        // -------------------------------------------------------------------
 
         mockMvc.perform(get("/reports/sales")
                         .param("start", "2023-01-01")

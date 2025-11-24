@@ -1,4 +1,4 @@
-package br.com.louise.AppProdutos.service;
+package br.com.louise.AppProdutos.security;
 
 import br.com.louise.AppProdutos.model.UserEntity;
 import br.com.louise.AppProdutos.repository.UserRepository;

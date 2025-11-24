@@ -1,4 +1,5 @@
 package br.com.louise.AppProdutos.controllerTests;
+
 import br.com.louise.AppProdutos.controller.OrderController;
 import br.com.louise.AppProdutos.dto.order.DTOOrderRequest;
 import br.com.louise.AppProdutos.dto.order.DTOOrderResponse;
@@ -6,10 +7,10 @@ import br.com.louise.AppProdutos.dto.payment.PaymentMethod;
 import br.com.louise.AppProdutos.model.OrderStatus;
 import br.com.louise.AppProdutos.repository.OrderEntityRepository;
 import br.com.louise.AppProdutos.repository.RefreshTokenRepository;
-import br.com.louise.AppProdutos.service.OrderPermissionService;
+import br.com.louise.AppProdutos.security.OrderPermissionService;
 import br.com.louise.AppProdutos.service.OrderService;
-import br.com.louise.AppProdutos.service.TokenService;
-import br.com.louise.AppProdutos.service.AppUserDetailsService;
+import br.com.louise.AppProdutos.security.TokenService;
+import br.com.louise.AppProdutos.security.AppUserDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,62 +1,60 @@
 package br.com.louise.AppProdutos.service.impl;
 
-import br.com.louise.AppProdutos.controller.ReportController;
 import br.com.louise.AppProdutos.dto.report.DTOSalesReport;
-import br.com.louise.AppProdutos.service.ReportService;
-import br.com.louise.AppProdutos.service.TokenService;
-import br.com.louise.AppProdutos.service.AppUserDetailsService;
+import br.com.louise.AppProdutos.repository.OrderEntityRepository;
+import br.com.louise.AppProdutos.repository.OrderProductEntityRepository;
+import br.com.louise.AppProdutos.repository.ProductRepository;
+import br.com.louise.AppProdutos.service.impl.ReportServiceImpl;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal; // <--- IMPORT NOVO
-import java.time.LocalDate;  // <--- IMPORT NOVO
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ReportController.class)
-@AutoConfigureMockMvc(addFilters = false)
-class ReportControllerTest {
+@ExtendWith(MockitoExtension.class)
+class ReportServiceTest {
 
-    @Autowired private MockMvc mockMvc;
-    @MockBean private ReportService reportService;
-    @MockBean private TokenService tokenService;
-    @MockBean private AppUserDetailsService appUserDetailsService;
+    @InjectMocks
+    private ReportServiceImpl reportService;
+
+    @Mock private OrderEntityRepository orderRepository;
+    @Mock private OrderProductEntityRepository orderItemRepository;
+    @Mock private ProductRepository productRepository;
 
     @Test
-    @WithMockUser(roles = "ADMIN")
-    void getSalesReport_ShouldReturnOk() throws Exception {
-        // --- CORREÇÃO AQUI: Preenchendo o construtor com dados fictícios ---
-        DTOSalesReport reportMock = new DTOSalesReport(LocalDate.now(), 10L, new BigDecimal("500.00"));
+    void getSalesReport_ShouldCallRepositoryWithCorrectDates() {
+        LocalDate start = LocalDate.of(2023, 1, 1);
+        LocalDate end = LocalDate.of(2023, 1, 31);
 
-        when(reportService.getSalesReport(any(), any())).thenReturn(List.of(reportMock));
-        // -------------------------------------------------------------------
+        when(orderRepository.getSalesReport(any(), any())).thenReturn(List.of(
+                new DTOSalesReport(LocalDate.now(), 10L, BigDecimal.TEN)
+        ));
 
-        mockMvc.perform(get("/reports/sales")
-                        .param("start", "2023-01-01")
-                        .param("end", "2023-01-31"))
-                .andExpect(status().isOk());
+        reportService.getSalesReport(start, end);
+
+        verify(orderRepository).getSalesReport(
+                start.atStartOfDay(),
+                end.atTime(23, 59, 59)
+        );
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
-    void getTopProducts_ShouldReturnOk() throws Exception {
-        mockMvc.perform(get("/reports/top-products"))
-                .andExpect(status().isOk());
+    void getTopSellingProducts_ShouldCallRepository() {
+        reportService.getTopSellingProducts();
+        verify(orderItemRepository).findTopSellingProducts();
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
-    void getLowStock_ShouldReturnOk() throws Exception {
-        mockMvc.perform(get("/reports/low-stock").param("min", "5"))
-                .andExpect(status().isOk());
+    void getLowStockProducts_ShouldCallRepository() {
+        reportService.getLowStockProducts(10);
+        verify(productRepository).findByStockQuantityLessThan(10);
     }
 }

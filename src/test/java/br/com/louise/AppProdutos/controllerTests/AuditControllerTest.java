@@ -3,8 +3,8 @@ package br.com.louise.AppProdutos.controllerTests;
 import br.com.louise.AppProdutos.controller.AuditController;
 import br.com.louise.AppProdutos.model.AuditLogEntity;
 import br.com.louise.AppProdutos.service.AuditService;
-import br.com.louise.AppProdutos.service.TokenService;
-import br.com.louise.AppProdutos.service.AppUserDetailsService;
+import br.com.louise.AppProdutos.security.TokenService;
+import br.com.louise.AppProdutos.security.AppUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -40,6 +40,4 @@ class AuditControllerTest {
                 .andExpect(status().isOk());
     }
 
-    // Nota: O teste de 403 Forbidden real requer 'addFilters = true',
-    // mas aqui validamos a existência do endpoint e contrato.
 }
