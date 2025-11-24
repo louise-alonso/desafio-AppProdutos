@@ -25,11 +25,11 @@ import org.springframework.context.annotation.Configuration;
                         > **Nota:** Para detalhes técnicos sobre a arquitetura, cobertura de testes e mapa completo de endpoints, consulte os arquivos `README.md` e `TESTING.md` na raiz do projeto.
                         ---
                         
-                        ##  1. Regras Gerais da API
+                        ##  Regras Gerais da API
                         
                         ###  Autenticação
                         - Feita via **Token JWT**.
-                        - Para endpoints protegidos, faça login, copie o token, clique no botão **Authorize** (cadeado 🔓) e informe o token na caixa de texto.
+                        - Para endpoints protegidos, faça login, copie o token, clique no botão **Authorize** (cadeado) e informe o token na caixa de texto.
                         
                         ###  Perfis de Acesso
                         | Perfil     | Permissões principais                                      |
