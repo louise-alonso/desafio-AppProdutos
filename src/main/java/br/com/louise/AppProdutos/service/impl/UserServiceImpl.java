@@ -1,7 +1,7 @@
 package br.com.louise.AppProdutos.service.impl;
 
-import br.com.louise.AppProdutos.dto.DTOUserRequest;
-import br.com.louise.AppProdutos.dto.DTOUserResponse;
+import br.com.louise.AppProdutos.dto.user.DTOUserRequest;
+import br.com.louise.AppProdutos.dto.user.DTOUserResponse;
 import br.com.louise.AppProdutos.model.UserEntity;
 import br.com.louise.AppProdutos.repository.UserRepository;
 import br.com.louise.AppProdutos.service.UserService;
@@ -42,13 +42,23 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    private String validateRole(String roleInput) {
+        if (roleInput == null) return "CUSTOMER";
+
+        String role = roleInput.toUpperCase();
+        if (!role.equals("ADMIN") && !role.equals("SELLER") && !role.equals("CUSTOMER")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Role inválida. Opções permitidas: ADMIN, SELLER, CUSTOMER");
+        }
+        return role;
+    }
 
     private UserEntity convertToEntity(DTOUserRequest request) {
         return UserEntity.builder()
                 .userId(UUID.randomUUID().toString())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole().toUpperCase())
+                .role(validateRole(request.getRole().toUpperCase()))
                 .name(request.getName())
                 .build();
 
@@ -74,11 +84,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(String id) {
-        UserEntity existingUser = userRepository.findByUserId(id)
-                .orElseThrow(()-> new UsernameNotFoundException("User not found"));
-                userRepository.delete(existingUser);
-
-
+        if (!userRepository.findByUserId(id).isPresent()) {
+            throw new UsernameNotFoundException("User not found");
+        }
+        userRepository.deleteByUserId(id);
     }
 
     @Override
@@ -92,7 +101,7 @@ public class UserServiceImpl implements UserService {
 
         existingUser.setName(request.getName());
         existingUser.setEmail(request.getEmail());
-        existingUser.setRole(request.getRole().toUpperCase());
+        existingUser.setRole(validateRole(request.getRole().toUpperCase()));
 
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
             existingUser.setPassword(passwordEncoder.encode(request.getPassword()));

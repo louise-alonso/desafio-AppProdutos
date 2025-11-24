@@ -1,5 +1,7 @@
-package br.com.louise.AppProdutos.dto;
+package br.com.louise.AppProdutos.dto.order;
 
+import br.com.louise.AppProdutos.dto.payment.DTOPaymentDetails;
+import br.com.louise.AppProdutos.dto.payment.PaymentMethod;
 import br.com.louise.AppProdutos.model.OrderStatus; // Importar o novo enum
 import lombok.AllArgsConstructor;
 import lombok.Builder;

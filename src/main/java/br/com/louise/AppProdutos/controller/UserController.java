@@ -1,8 +1,12 @@
 package br.com.louise.AppProdutos.controller;
 
-import br.com.louise.AppProdutos.dto.DTOUserRequest;
-import br.com.louise.AppProdutos.dto.DTOUserResponse;
+// --- NOVOS IMPORTS ---
+import br.com.louise.AppProdutos.dto.user.DTOUserRequest;
+import br.com.louise.AppProdutos.dto.user.DTOUserResponse;
+// ---------------------
+
 import br.com.louise.AppProdutos.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,12 +25,8 @@ public class UserController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public DTOUserResponse registerUser(@RequestBody DTOUserRequest DTOUserRequest) {
-        try {
-            return userService.createUser(DTOUserRequest);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to create user: " + e.getMessage());
-        }
+    public DTOUserResponse registerUser(@RequestBody @Valid DTOUserRequest request) {
+        return userService.createUser(request);
     }
 
     @GetMapping("/users")
@@ -42,19 +42,19 @@ public class UserController {
         try {
             userService.deleteUser(id);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado");
         }
     }
 
     @PutMapping("/users/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public DTOUserResponse updateUsers(@PathVariable String id, @RequestBody DTOUserRequest DTOUserRequest) {
+    public DTOUserResponse updateUsers(@PathVariable String id, @RequestBody DTOUserRequest request) {
         try {
-            return userService.updateUser(id, DTOUserRequest);
+            return userService.updateUser(id, request);
         } catch (UsernameNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Update failed: " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Falha na atualização: " + e.getMessage());
         }
     }
 }
