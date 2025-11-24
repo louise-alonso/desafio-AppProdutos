@@ -1,4 +1,4 @@
-package br.com.louise.AppProdutos.dto;
+package br.com.louise.AppProdutos.dto.product;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

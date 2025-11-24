@@ -38,8 +38,6 @@ public class ProductEntity {
 
     private BigDecimal costPrice;
 
-    private Integer stockQuantity;
-
     @Builder.Default
     private Boolean active = true;
 
@@ -61,4 +59,13 @@ public class ProductEntity {
     private UserEntity owner;
 
     private String sellerEmail;
+
+    private Integer stockQuantity;
+
+    // NOVOS CAMPOS
+    @Builder.Default
+    private Double averageRating = 0.0;
+
+    @Builder.Default
+    private Integer reviewCount = 0;
 }

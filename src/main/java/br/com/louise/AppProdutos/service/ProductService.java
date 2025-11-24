@@ -1,7 +1,7 @@
 package br.com.louise.AppProdutos.service;
 
-import br.com.louise.AppProdutos.dto.DTOProductRequest;
-import br.com.louise.AppProdutos.dto.DTOProductResponse;
+import br.com.louise.AppProdutos.dto.product.DTOProductRequest;
+import br.com.louise.AppProdutos.dto.product.DTOProductResponse;
 
 import java.util.List;
 
