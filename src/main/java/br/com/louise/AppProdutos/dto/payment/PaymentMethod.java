@@ -1,10 +1,9 @@
-// PaymentMethod.java
-
-package br.com.louise.AppProdutos.dto;
+package br.com.louise.AppProdutos.dto.payment;
 
 public enum PaymentMethod {
-    PIX,
     CARTAO_CREDITO,
+    CARTAO_DEBITO,
+    PIX,
     BOLETO,
     DINHEIRO
 }

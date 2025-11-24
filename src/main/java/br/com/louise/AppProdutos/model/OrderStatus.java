@@ -1,10 +1,9 @@
-// src/main/java/br/com/louise/AppProdutos/model/OrderStatus.java
 package br.com.louise.AppProdutos.model;
 
 public enum OrderStatus {
-    CREATED,
-    PAID,
-    SHIPPED,
-    DELIVERED,
-    CANCELLED
+    CREATED,    // Criado (aguardando pagto)
+    PAID,       // Pago
+    SHIPPED,    // Enviado
+    DELIVERED,  // Entregue
+    CANCELLED   // Cancelado
 }

@@ -1,4 +1,4 @@
-package br.com.louise.AppProdutos.dto;
+package br.com.louise.AppProdutos.dto.coupon;
 
 import br.com.louise.AppProdutos.model.DiscountType;
 import lombok.Data;

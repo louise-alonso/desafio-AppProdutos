@@ -14,11 +14,6 @@ public class OrderPermissionService {
 
     public boolean isOrderOwner(String orderId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return false;
-        }
-
         String currentEmail = authentication.getName();
 
         return orderRepository.findByOrderId(orderId)

@@ -1,4 +1,4 @@
-package br.com.louise.AppProdutos.dto;
+package br.com.louise.AppProdutos.dto.payment;
 
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
