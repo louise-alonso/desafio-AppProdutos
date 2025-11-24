@@ -28,10 +28,10 @@ public class CategoryServiceImpl implements CategoryService {
     public DTOCategoryResponse add(DTOCategoryRequest request) {
         CategoryEntity newCategory = convertToEntity(request);
 
-        // --- LÓGICA DE HIERARQUIA (PAI -> FILHO) ---
         if (request.getParentId() != null && !request.getParentId().isBlank()) {
             CategoryEntity parent = categoryRepository.findByCategoryId(request.getParentId())
                     .orElseThrow(() -> new EntityNotFoundException("Categoria pai não encontrada: " + request.getParentId()));
+
             newCategory.setParent(parent);
         }
 

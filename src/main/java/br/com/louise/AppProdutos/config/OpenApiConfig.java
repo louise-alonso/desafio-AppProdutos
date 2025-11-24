@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Configuration;
                         Bem-vindo(a) à API **AppProdutos**.
                         Este Swagger contém *exemplos prontos em todos os endpoints*, permitindo testar facilmente todos os fluxos.
                         
+                        > **Nota:** Para detalhes técnicos sobre a arquitetura, cobertura de testes e mapa completo de endpoints, consulte os arquivos `README.md` e `TESTING.md` na raiz do projeto.
                         ---
                         
                         ##  1. Regras Gerais da API
@@ -33,33 +34,53 @@ import org.springframework.context.annotation.Configuration;
                         ###  Perfis de Acesso
                         | Perfil     | Permissões principais                                      |
                         |------------|------------------------------------------------------------|
-                        | **ADMIN** | Acesso total ao sistema. CRUD geral e Relatórios.          |
-                        | **SELLER** | Gerencia apenas os produtos que ele mesmo criou.           |
-                        | **CUSTOMER**| Usa carrinho, aplica cupom e finaliza pedidos.            |
+                        | **ADMIN** | Acesso total (criar/editar/deletar produtos, categorias, cupons e ver relatórios)   |
+                        | **SELLER** | Pode cadastrar produtos, mas **só pode editar/deletar os produtos que ele mesmo criou|
+                        | **CUSTOMER**| Acesso apenas para visualizar catálogo, comprar e avaliar. |
                         
                         ---
-                        
                         ##  Regras de Negócio Essenciais
                         
+                        ### Categorias
+                        - Podem ter estrutura de árvore (Pai → Filho).
+                        - Não é permitido deletar uma categoria que possua subcategorias ou produtos vinculados. É necessário esvaziá-la antes.
+                        - Unicidade: O nome da categoria deve ser único.
+                                    
                         ### ️ Produtos
                         - Pertencem a **categorias**.
                         - Criados apenas por **ADMIN** ou **SELLER**.
                         - Estoque sempre >= 0.
                         
+                        ### Controle de Estoque (Inventário)
+                        - Toda movimentação (Entrada/Saída) gera um registro imutável de histórico.
+                        - O sistema impede a venda se o estoque for insuficiente.
+                        
                         ###  Carrinho
-                        - Um cliente possui **apenas 1 carrinho ativo**.
+                        - Um cliente possui **apenas 1 carrinho ativo** por vez.
                         - Itens são atualizados se repetidos.
                         - Valida estoque e preço no momento da adição.
                         
                         ###  Cupons
-                        - Só válidos se dentro da data, não expirados e respeitando limites de uso.
+                        - Só válidos se dentro da data de validade.
+                        - Respeitam limites de uso (Global e Por Usuário).
+                        - Validam valor mínimo do pedido.
                         
                         ###  Pedidos
                         Ao finalizar:
                         - Estoque é descontado automaticamente.
                         - Carrinho é limpo.
                         - Sistema calcula subtotal, descontos e total final.
+                        - Cancelamento: Só permitido se o status for `CREATED` ou `PAID`. Ao cancelar, o estoque é estornado.
                         
+                        ### Avaliações (Reviews)
+                        
+                        - O usuário SÓ pode avaliar um produto se tiver comprado e o pedido estiver `PAID` ou `DELIVERED`.
+                        - Limite de 1 avaliação por produto por pedido.
+                        - A nota do produto é recalculada automaticamente a cada nova avaliação.
+                        
+                        ### Relatórios e Auditoria
+                        - Exclusivos para **ADMIN**.
+                        - Logs de auditoria são imutáveis.
                         ---
                         
                         ##  Passo a Passo Rápido para Testes
