@@ -112,6 +112,7 @@ src/test/java/br/com/louise/AppProdutos
 - Regras de checkout (Carrinho vazio, Usuário inexistente).
 - Lógica de Média de Avaliações (Reviews).
 - Segurança: Validação se o usuário (Seller) é dono do produto.
+- Integridade: Impedir deleção de Categoria que possui dependências (Filhos/Produtos).
 
 ---
 
@@ -146,3 +147,14 @@ src/test/java/br/com/louise/AppProdutos
 Rodar toda a suíte:
 ```bash
 mvn test
+
+## Testando Notificações e Emails
+
+Como o sistema utiliza envio assíncrono de e-mails (para alertas de estoque e atualização de pedidos), utilizamos o **Mailtrap** para capturar essas mensagens em ambiente de desenvolvimento sem enviá-las para contas reais.
+
+**Passos para validar:**
+1. Crie uma conta em [Mailtrap.io](https://mailtrap.io).
+2. Pegue suas credenciais SMTP.
+3. Configure no `application.properties` ou nas variáveis de ambiente do Docker.
+4. Execute uma ação que dispare e-mail (ex: Alterar status de pedido para `DELIVERED`).
+5. Verifique a caixa de entrada do Mailtrap; a mensagem HTML formatada deverá aparecer lá.

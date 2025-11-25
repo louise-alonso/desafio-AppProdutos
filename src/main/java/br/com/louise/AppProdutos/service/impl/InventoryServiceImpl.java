@@ -81,6 +81,20 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public List<InventoryTransactionEntity> getHistoryByProduct(String productId) {
+        ProductEntity product = productRepository.findByProductId(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + productId));
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = auth.getName();
+        String role = auth.getAuthorities().iterator().next().getAuthority();
+
+        if ("ROLE_SELLER".equals(role)) {
+            // Seller só pode ver histórico dos próprios produtos
+            if (!product.getOwner().getEmail().equals(currentEmail)) {
+                throw new AccessDeniedException("Você não tem permissão para ver o histórico deste produto.");
+            }
+        }
+
         return transactionRepository.findByProductProductIdOrderByCreatedAtDesc(productId);
     }
 }

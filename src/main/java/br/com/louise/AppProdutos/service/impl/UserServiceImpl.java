@@ -5,6 +5,7 @@ import br.com.louise.AppProdutos.dto.user.DTOUserResponse;
 import br.com.louise.AppProdutos.model.UserEntity;
 import br.com.louise.AppProdutos.repository.UserRepository;
 import br.com.louise.AppProdutos.service.UserService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -25,7 +26,28 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public DTOUserResponse createUser(DTOUserRequest request) {
+    @Transactional
+    public DTOUserResponse createUser(DTOUserRequest request, String currentUserRole) {
+        // VALIDAÇÃO DE SEGURANÇA: Apenas ADMIN pode criar outros ADMIN
+        if ("ADMIN".equalsIgnoreCase(request.getRole()) && !"ADMIN".equals(currentUserRole)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Apenas administradores podem criar outros administradores");
+        }
+
+        UserEntity newUser = convertToEntity(request);
+        newUser = userRepository.save(newUser);
+        return convertToResponse(newUser);
+    }
+
+    @Transactional
+    public DTOUserResponse createFirstAdmin(DTOUserRequest request) {
+        // Força role ADMIN para primeiro usuário
+        if (!userRepository.findByRole("ADMIN").isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Já existe um administrador no sistema");
+        }
+
+        request.setRole("ADMIN"); // Garante que seja ADMIN
         UserEntity newUser = convertToEntity(request);
         newUser = userRepository.save(newUser);
         return convertToResponse(newUser);
@@ -58,7 +80,7 @@ public class UserServiceImpl implements UserService {
                 .userId(UUID.randomUUID().toString())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(validateRole(request.getRole().toUpperCase()))
+                .role(validateRole(request.getRole()))
                 .name(request.getName())
                 .build();
 
@@ -110,4 +132,5 @@ public class UserServiceImpl implements UserService {
         existingUser = userRepository.save(existingUser);
         return convertToResponse(existingUser);
     }
+
 }

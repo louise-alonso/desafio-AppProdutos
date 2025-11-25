@@ -47,12 +47,12 @@ public class ProductServiceImpl implements ProductService {
         ProductEntity newProduct = convertToEntity(request);
         newProduct.setCategory(existingCategory);
 
-        // Define o dono (Owner)
+        // Define o dono (Owner) - CORREÇÃO AQUI
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity owner = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário proprietário não encontrado."));
 
-        newProduct.setOwner(owner);
+        newProduct.setOwner(owner); // CORREÇÃO: usar 'owner' em vez de 'currentUser'
 
         newProduct = productRepository.save(newProduct);
 
@@ -195,6 +195,8 @@ public class ProductServiceImpl implements ProductService {
                 .categoryId(productEntity.getCategory() != null ? productEntity.getCategory().getCategoryId() : null)
                 .createdAt(productEntity.getCreatedAt())
                 .updatedAt(productEntity.getUpdatedAt())
+                .averageRating(productEntity.getAverageRating())
+                .reviewCount(productEntity.getReviewCount())
                 .build();
     }
 

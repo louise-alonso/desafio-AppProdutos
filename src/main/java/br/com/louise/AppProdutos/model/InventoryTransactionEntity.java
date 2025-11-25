@@ -1,5 +1,6 @@
 package br.com.louise.AppProdutos.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class InventoryTransactionEntity {
 
     @Id
@@ -43,4 +45,7 @@ public class InventoryTransactionEntity {
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    private Integer stockAfterTransaction;
+
 }

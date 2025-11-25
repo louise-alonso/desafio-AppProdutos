@@ -3,6 +3,9 @@
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2+-green)
 ![Security](https://img.shields.io/badge/JWT-Auth-blue)
+![H2 Database](https://img.shields.io/badge/Database-H2-blue)
+![Redis](https://img.shields.io/badge/Redis-Cache-red)
+![Docker](https://img.shields.io/badge/Docker-Support-blue)
 ![Swagger](https://img.shields.io/badge/Swagger-UI-brightgreen)
 ![Flyway](https://img.shields.io/badge/Flyway-Migration-red)
 
@@ -24,6 +27,7 @@ O sistema implementa todas as regras de negócio propostas, garantindo consistê
 * **Hierarquia:** Suporte a categorias com estrutura de árvore (Pai → Filho).
 * **Unicidade:** O nome da categoria é único no sistema para evitar duplicidade.
 * **Vínculo:** Todo produto deve obrigatoriamente pertencer a uma categoria existente.
+* * **Integridade de Deleção:** Para preservar o histórico e consistência, **não é permitido deletar uma Categoria** se ela possuir produtos vinculados ou subcategorias filhas. É necessário esvaziá-la antes.
 
 ### 3. Controle de Estoque (Inventário)
 * **Auditoria de Movimentação:** Cada alteração de saldo gera um registro imutável em `InventoryTransaction` com tipo (ENTRADA, SAÍDA, AJUSTE, DEVOLUÇÃO) e responsável.
@@ -66,37 +70,48 @@ O sistema implementa todas as regras de negócio propostas, garantindo consistê
 * **Estoque Crítico:** Alerta de produtos com quantidade abaixo do nível de segurança.
 
 ---
+## Status de Implementação do Projeto
 
-##  Documentação Interativa (Swagger)
+Abaixo, o resumo do que foi desenvolvido com base nos requisitos solicitados.
 
-A API possui uma documentação completa e interativa.
-* **Guia Passo a Passo:** Tutorial integrado na página inicial do Swagger.
-* **Exemplos de JSON:** Payloads de requisição pré-preenchidos.
-* **Teste Real:** Botão "Try it out" para executar requisições.
+| Requisito / Funcionalidade      | Status  | Observação                                               |
+|:--------------------------------|:-------:|:---------------------------------------------------------|
+| **1. Autenticação e Segurança** | ✅ Feito | JWT, Roles, BCrypt, Refresh Token.                       |
+| **2. Categorias (Hierarquia)**  | ✅ Feito | Árvore Pai/Filho e Integridade Referencial.              |
+| **3. Controle de Estoque**      | ✅ Feito | Histórico de transações e travas de saldo.               |
+| **4. Carrinho de Compras**      | ✅ Feito | Validação de preço e estoque em tempo real.              |
+| **5. Pedidos (Checkout)**       | ✅ Feito | Fluxo completo com estorno em cancelamento.              |
+| **6. Promoções e Cupons**       | ✅ Feito | Validações complexas de uso e expiração.                 |
+| **7. Reviews e Avaliações**     | ✅ Feito | Regra de "Compra Verificada" implementada.               |
+| **8. Auditoria (Logs)**         | ✅ Feito | Snapshots JSON de alterações.                            |
+| **9. Relatórios Gerenciais**    | ✅ Feito | Vendas, Top Produtos e Estoque Baixo.                    |
+| **Documentação (Swagger)**      | ✅ Feito | Guia passo a passo e exemplos interativos.               |
+| **Testes Automatizados**        | ✅ Feito | Unitários e Integração (JUnit/Mockito).                  |
+| **Migrations (Flyway)**         | ✅ Feito | Versionamento de banco de dados.                         |
+| *Notificações por E-mail*       | ✅ Feito | Desafio Bônus                                            |
+| *Caching (Redis)*               | ✅ Feito | Desafio Bônus                                            |
+| *Agendamento (Scheduler)*       | ✅ Feito | Desafio Bônus                                            |
+| *Multi-seller*                  | ✅ Feito | Desafio Bônus                                            |
 
-**Como acessar:**
-1. Rode a aplicação.
-2. Abra no navegador: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+---
+## 🐳 Infraestrutura e Desafio Bônus (Redis)
+
+Embora a aplicação principal e o banco de dados (H2) rodem na JVM localmente, utilizamos o **Docker Compose** para atender ao **requisito bônus de performance (Caching)**.
+
+**Por que Docker?**
+O Docker é utilizado neste projeto exclusivamente para subir o container do **Redis** e expor a porta `6379`. Isso permite que a aplicação Java conecte-se ao serviço de cache sem a necessidade de instalar o servidor Redis manualmente no sistema operacional.
+
+**Serviços do Docker Compose:**
+1.  **Redis:** Banco NoSQL em memória para cache.
+2.  **Redis Commander:** Interface web para visualizar as chaves salvas no cache (Porta 8081).
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
-
-* **Java 21** & **Spring Boot 3**
-* **Spring Security** (JWT + OAuth2 Resource Server pattern)
-* **Spring Data JPA** & **H2 Database** (Memória/Dev)
-* **Flyway** (Versionamento de Banco de Dados)
-* **SpringDoc OpenAPI** (Swagger UI)
-* **Lombok** & **Bean Validation**
-* **JUnit 5** & **Mockito** (Testes Unitários e de Integração)
-
----
-
-## ⚙️ Como Rodar o Projeto
+## 🚀 Como Rodar o Projeto
 
 ### Pré-requisitos
-* Java JDK 21 instalado
-* Maven instalado
+* Java 21 e Maven instalados.
+* Docker Desktop instalado (para o Redis).
 
 ### Passos
 1.  **Clone o repositório:**
@@ -106,20 +121,67 @@ A API possui uma documentação completa e interativa.
     ```
 
 2.  **Execute a aplicação:**
+    ABRA O DOCKER DESKTOP
     ```bash
-    mvn spring-boot:run
+    cd .\src\main\java\br\com\louise\AppProdutos\
     ```
 
-3.  **Acesse os recursos:**
-    * **Swagger (API):** `http://localhost:8080/swagger-ui.html`
-    * **H2 Console (Banco):** `http://localhost:8080/h2-console`
+    ```bash
+    docker-compose up -d
+    ```
+Isso iniciará o Redis na porta 6379 e o Redis Commander na porta 8081.    
 
-## 🧪 Testes Automatizados
+Com o Redis ativo, inicie a aplicação Spring Boot clicendo em application.properties
+
+    
+
+
+
+## Passo 3: Acessar
+
+Swagger (API): http://localhost:8080/swagger-ui.html  
+H2 Console (Banco): http://localhost:8080/h2-console  
+Redis Commander (Cache Visual): http://localhost:8081
+
+## Como Testar o Bônus (Redis Caching)
+
+Para verificar se o Caching com Redis está funcionando corretamente:
+
+### Abra o Console da Aplicação
+Fique de olho no terminal onde o Java está rodando.
+
+### Faça a Primeira Requisição (Cache Miss)
+Vá no Swagger e execute GET /products.
+
+Resultado:  
+Você verá no log uma consulta SQL (Hibernate: select ...) buscando no H2.
+
+### Faça a Segunda Requisição (Cache Hit)
+Execute GET /products novamente.
+
+Resultado:  
+Não haverá consulta SQL no log.  
+O tempo de resposta será muito mais rápido (dado vindo do Redis).
+
+
+
+##  Testes Automatizados
 
 O projeto conta com uma suíte robusta de testes cobrindo Controllers, Services e Repositories, garantindo que todas as regras de negócio acima estejam funcionando.
 
-📄 **Para detalhes técnicos sobre a estratégia de testes e mapa de endpoints, consulte o arquivo [TESTING.md](TESTING.md).**
+**Para detalhes técnicos sobre a estratégia de testes e mapa de endpoints, consulte o arquivo [TESTING.md](TESTING.md).**
 
 Para rodar os testes:
 ```bash
 mvn test
+
+## Configuração de E-mail (Opcional)
+
+Para testar o envio de notificações (Scheduler de estoque baixo), o projeto utiliza o **Mailtrap** (servidor SMTP fake).
+
+1. Crie uma conta gratuita em [Mailtrap.io](https://mailtrap.io/).
+2. No painel, vá em **Inboxes** > **SMTP Settings**.
+3. Configure as variáveis no `application.properties` ou passe como argumentos ao rodar a aplicação:
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.arguments="--spring.mail.username=SEU_USER --spring.mail.password=SUA_SENHA"

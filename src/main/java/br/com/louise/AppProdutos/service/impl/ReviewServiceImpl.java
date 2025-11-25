@@ -100,7 +100,6 @@ public class ReviewServiceImpl implements ReviewService {
                 .collect(Collectors.toList());
     }
 
-    // --- MÉTODO PRIVADO DE CÁLCULO (O que estava faltando) ---
     private void updateProductRating(ProductEntity product) {
         List<ReviewEntity> reviews = reviewRepository.findByProductProductIdOrderByCreatedAtDesc(product.getProductId());
 
@@ -122,7 +121,6 @@ public class ReviewServiceImpl implements ReviewService {
 
         productRepository.save(product);
     }
-    // ---------------------------------------------------------
 
     private DTOReviewResponse mapToResponse(ReviewEntity entity) {
         return DTOReviewResponse.builder()

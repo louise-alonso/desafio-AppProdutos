@@ -34,38 +34,34 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // ====================================================
-                        // 1. REGRAS PÚBLICAS (DEVEM VIR PRIMEIRO)
+                        // 1. REGRAS PÚBLICAS
                         // ====================================================
-
-                        // Cadastro
-                        .requestMatchers(HttpMethod.POST, "/admin/register").permitAll()
-
-                        // Autenticação
-                        .requestMatchers("/auth/**").permitAll()
-
-                        // H2 Console
-                        .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/error").permitAll()
-
-                        // --- CORREÇÃO AQUI: Liberar todas as variações do Swagger ---
-                        .requestMatchers(
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html" // <--- Faltava essa linha específica!
-                        ).permitAll()
-                        // ------------------------------------------------------------
-
-                        // Catálogo Público (GET)
+                        .requestMatchers(HttpMethod.POST, "/admin/register-first").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
+                        .requestMatchers("/h2-console/**", "/error").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/reviews/**").permitAll()
 
                         // ====================================================
-                        // 2. REGRAS PROTEGIDAS (VÊM DEPOIS)
+                        // 2. ENDPOINTS PROTEGIDOS
                         // ====================================================
-
-                        // Rotas de Admin
+                        .requestMatchers("/admin/users/**").hasRole("ADMIN")
+                        .requestMatchers("/audit/**").hasRole("ADMIN")
+                        .requestMatchers("/reports/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/categories/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/coupons/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/products/**").hasAnyRole("ADMIN", "SELLER")
+                        .requestMatchers("/inventory/**").hasAnyRole("ADMIN", "SELLER")
+                        // ====================================================
+                        // 3. RESTO DOS ENDPOINTS /admin/** (apenas ADMIN)
+                        // ====================================================
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                        // O restante exige autenticação
+                        // ====================================================
+                        // 4. QUALQUER OUTRO ENDPOINT (requer autenticação)
+                        // ====================================================
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(validFilterJWT, UsernamePasswordAuthenticationFilter.class);

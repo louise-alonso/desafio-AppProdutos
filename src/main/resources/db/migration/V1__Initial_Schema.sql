@@ -60,6 +60,7 @@ CREATE TABLE tbl_inventory_transactions (
                                             responsible_email VARCHAR(255),
                                             created_at TIMESTAMP,
                                             product_id BIGINT NOT NULL,
+
                                             FOREIGN KEY (product_id) REFERENCES tbl_products(id)
 );
 
@@ -151,3 +152,5 @@ CREATE TABLE tbl_reviews (
                              FOREIGN KEY (product_id) REFERENCES tbl_products(id),
                              UNIQUE (order_id, product_id)
 );
+
+ALTER TABLE tbl_inventory_transactions ADD COLUMN stock_after_transaction INTEGER;

@@ -28,4 +28,7 @@ public class DTOProductResponse implements Serializable {
     private BigDecimal costPrice;
     private Integer stockQuantity;
     private Boolean active;
+
+    private Double averageRating;
+    private Integer reviewCount;
 }

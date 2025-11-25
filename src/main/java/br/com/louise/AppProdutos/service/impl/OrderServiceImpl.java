@@ -38,25 +38,47 @@ public class OrderServiceImpl implements OrderService {
     private final CouponService couponService;
     private final EmailService emailService;
 
+
     private static final List<OrderStatus> CANCELLATION_ALLOWED_STATUSES = Arrays.asList(
             OrderStatus.CREATED,
             OrderStatus.PAID
     );
 
+
     @Override
     @Transactional
     public DTOOrderResponse createOrder(DTOOrderRequest request) {
-        // 1. Identifica o Cliente Logado
         String customerEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        System.out.println("=== CHECKOUT DEBUG ===");
+        System.out.println("Customer: " + customerEmail);
+
         UserEntity customer = userRepository.findByEmail(customerEmail)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente logado não encontrado."));
 
-        // 2. Busca o Carrinho do Cliente
         CartEntity cart = cartRepository.findByUserEmail(customerEmail)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Carrinho vazio ou inexistente."));
+                .orElseGet(() -> {
+                    // Se não existe carrinho, cria um vazio
+                    CartEntity newCart = new CartEntity();
+                    newCart.setUser(customer);
+                    return cartRepository.save(newCart);
+                });
 
-        if (cart.getItems().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Carrinho vazio.");
+        var cartOpt = cartRepository.findByUserEmail(customerEmail);
+        System.out.println("Cart exists: " + cartOpt.isPresent()); // ← DEBUG
+        if (cartOpt.isPresent()) {
+            System.out.println("Cart items: " + cartOpt.get().getItems().size()); // ← DEBUG
+        }
+
+        if (cart.getItems() == null || cart.getItems().isEmpty()) {
+            // Em vez de simplesmente falhar, vamos dar uma mensagem mais específica
+            System.out.println("=== CARRINHO VAZIO - ADICIONE PRODUTOS ===");
+            System.out.println("Customer: " + customerEmail);
+            System.out.println("Cart ID: " + cart.getId());
+
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Carrinho vazio. Adicione produtos antes de finalizar a compra. " +
+                            "Use POST /cart/add com: {\"productId\": \"ID_DO_PRODUTO\", \"quantity\": 1}");
         }
 
         // 3. Converte Itens e Baixa Estoque
