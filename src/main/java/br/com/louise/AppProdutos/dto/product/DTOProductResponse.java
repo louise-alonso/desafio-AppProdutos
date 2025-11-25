@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
@@ -12,7 +13,9 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DTOProductResponse {
+public class DTOProductResponse implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String productId;
     private String name;
     private BigDecimal price;

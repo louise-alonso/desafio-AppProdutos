@@ -8,7 +8,9 @@ import br.com.louise.AppProdutos.model.UserEntity;
 import br.com.louise.AppProdutos.repository.CategoryRepository;
 import br.com.louise.AppProdutos.repository.ProductRepository;
 import br.com.louise.AppProdutos.repository.UserRepository;
-import br.com.louise.AppProdutos.service.AuditService; // <--- Importante
+import br.com.louise.AppProdutos.service.AuditService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import br.com.louise.AppProdutos.service.ProductService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +31,10 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
-    private final AuditService auditService; // <--- Nova Injeção
+    private final AuditService auditService;
 
     @Override
+    @CacheEvict(value = "products", allEntries = true)
     public DTOProductResponse add(DTOProductRequest request) {
         // Validação de SKU
         if (productRepository.existsBySku(request.getSku())) {
@@ -67,6 +70,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "products")
     public List<DTOProductResponse> fetchProducts() {
         return productRepository.findAll()
                 .stream()
@@ -75,6 +79,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "product", key = "#productId")
     public DTOProductResponse readProductById(String productId) {
         ProductEntity existingProduct = productRepository.findByProductId(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado com o id: " + productId));
@@ -83,6 +88,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = "products", allEntries = true)
     public void deleteProducts(String productId) {
         ProductEntity existingProduct = productRepository.findByProductId(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado"));
@@ -107,6 +113,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = "products", allEntries = true)
     public DTOProductResponse updateProduct(String productId, DTOProductRequest request) {
         // 1. Busca o produto existente
         ProductEntity existingProduct = productRepository.findByProductId(productId)

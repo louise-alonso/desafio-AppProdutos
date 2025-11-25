@@ -11,10 +11,7 @@ import br.com.louise.AppProdutos.repository.CartRepository;
 import br.com.louise.AppProdutos.repository.OrderEntityRepository;
 import br.com.louise.AppProdutos.repository.ProductRepository;
 import br.com.louise.AppProdutos.repository.UserRepository;
-import br.com.louise.AppProdutos.service.CartService;
-import br.com.louise.AppProdutos.service.CouponService;
-import br.com.louise.AppProdutos.service.InventoryService;
-import br.com.louise.AppProdutos.service.OrderService;
+import br.com.louise.AppProdutos.service.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +36,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartRepository cartRepository;
     private final CartService cartService;
     private final CouponService couponService;
+    private final EmailService emailService;
 
     private static final List<OrderStatus> CANCELLATION_ALLOWED_STATUSES = Arrays.asList(
             OrderStatus.CREATED,
@@ -202,19 +200,6 @@ public class OrderServiceImpl implements OrderService {
         orderEntityRepository.delete(order);
     }
 
-    @Override
-    public DTOOrderResponse updateOrderStatus(String orderId, DTOOrderStatusRequest request) {
-        OrderEntity order = orderEntityRepository.findByOrderId(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado"));
-
-        if (request.getStatus() == OrderStatus.CANCELLED) {
-            cancelOrder(orderId);
-            return convertToResponse(orderEntityRepository.findByOrderId(orderId).get());
-        }
-
-        order.setStatus(request.getStatus());
-        return convertToResponse(orderEntityRepository.save(order));
-    }
 
     private DTOOrderResponse convertToResponse(OrderEntity entity) {
         return DTOOrderResponse.builder()
@@ -229,5 +214,47 @@ public class OrderServiceImpl implements OrderService {
                         .map(p -> new DTOOrderResponse.OrderProductResponse(p.getProductId(), p.getName(), p.getPrice(), p.getQuantity()))
                         .collect(Collectors.toList()))
                 .build();
+    }
+
+    @Override
+    public DTOOrderResponse updateOrderStatus(String orderId, DTOOrderStatusRequest request) {
+        // 1. Busca o pedido no banco
+        OrderEntity order = orderEntityRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado"));
+
+        // 2. Lógica de Cancelamento (Se o status for CANCELLED, usa a lógica específica)
+        if (request.getStatus() == OrderStatus.CANCELLED) {
+            cancelOrder(orderId);
+            // Retorna o pedido atualizado após o cancelamento
+            return convertToResponse(orderEntityRepository.findByOrderId(orderId).get());
+        }
+
+        // 3. Atualização Normal de Status
+        order.setStatus(request.getStatus());
+        OrderEntity savedOrder = orderEntityRepository.save(order); // Salva no banco
+
+        // 4. --- NOVO CÓDIGO: DISPARAR EMAIL ---
+        try {
+            // Pega o email do cliente associado ao pedido
+            String clienteEmail = savedOrder.getCustomer().getEmail();
+
+            String assunto = "Atualização do Pedido #" + savedOrder.getOrderId();
+            String mensagem = String.format(
+                    "Olá %s,\n\nO status do seu pedido mudou para: %s.\n\nAcesse o app para mais detalhes.",
+                    savedOrder.getCustomerName(),
+                    savedOrder.getStatus()
+            );
+
+            // Chama o serviço de email (que deve ser @Async para não travar)
+            emailService.sendSimpleEmail(clienteEmail, assunto, mensagem);
+
+        } catch (Exception e) {
+            // Importante: Usamos try-catch para que, se o email falhar (ex: erro de rede),
+            // o pedido NÃO deixe de ser atualizado. Apenas logamos o erro.
+            System.err.println("Erro ao enviar email de status: " + e.getMessage());
+        }
+        // -----------------------------------
+
+        return convertToResponse(savedOrder);
     }
 }

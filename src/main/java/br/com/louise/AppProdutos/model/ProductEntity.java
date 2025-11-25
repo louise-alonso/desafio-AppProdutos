@@ -50,12 +50,12 @@ public class ProductEntity {
 
     // relacionamento com Categoria
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name= "categoryId", nullable = false)
+    @JoinColumn(name= "category_id", nullable = false)
     private CategoryEntity category;
 
     //dono do Produto
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ownerId", nullable = false)
+    @JoinColumn(name = "owner_id", nullable = false)
     private UserEntity owner;
 
     private String sellerEmail;
