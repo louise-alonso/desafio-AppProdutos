@@ -152,7 +152,7 @@ As collections estão na pasta postman/collections/
 
 ---
 
-## ⚠️ IMPORTANTE — Instruções de Teste
+## IMPORTANTE — Instruções de Teste
 
 **REINICIE A APLICAÇÃO ENTRE COLLECTIONS!**
 
@@ -174,33 +174,6 @@ As collections estão na pasta postman/collections/
 3. Reinicie a aplicação
 4. Execute **Reviews, Auditoria e Relatórios**
 ---
-
-## ⚠️ IMPORTANTE — Instruções de Teste
-
-### **REINICIE A APLICAÇÃO ENTRE COLLECTIONS!**
-
-Devido ao compartilhamento de dados entre testes, é **CRÍTICO** reiniciar a aplicação:
-
-    ```bash
-    # Entre collections, pare e reinicie:
-    Ctrl+C
-    mvn spring-boot:run
-    ```
-
-### Por que reiniciar?
-
-- Dados compartilhados entre collections podem causar conflitos
-- IDs únicos podem ser reutilizados incorretamente
-- Estado do banco pode afetar testes subsequentes
-- Garante que cada collection rode em ambiente limpo
-
-### Ordem Recomendada de Execução:
-
-1. Reinicie aplicação
-2. Execute **Testes Negativos (Permissões)**
-3. Reinicie aplicação
-4. Execute **Reviews, Auditoria e Relatórios**
-
 
 ## Testes Automatizados
 
