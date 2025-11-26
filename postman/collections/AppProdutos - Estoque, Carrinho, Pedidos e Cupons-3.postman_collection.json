@@ -1,0 +1,1419 @@
+{
+	"info": {
+		"_postman_id": "5432d54d-6393-43c4-a2e4-a75c65d93ac3",
+		"name": "AppProdutos - Estoque, Carrinho, Pedidos e Cupons-3",
+		"description": "Testes completos do fluxo de estoque, carrinho, pedidos e sistema de cupons",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45343177",
+		"_collection_link": "https://projeto-appproducts.postman.co/workspace/AppProducts~27ec442f-8fb9-4a8f-90b6-38f4b0d01d93/collection/45343177-5432d54d-6393-43c4-a2e4-a75c65d93ac3?action=share&source=collection_link&creator=45343177"
+	},
+	"item": [
+		{
+			"name": "00. Setup Inicial - Criar Usuários e Produtos",
+			"item": [
+				{
+					"name": "1. Criar Primeiro Admin",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"admin_email\", \"admin_\" + timestamp + \"@test.com\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Primeiro Admin Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.userId) {",
+									"    pm.environment.set(\"admin_user_id\", response.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Admin Principal\",\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"123456\",\n  \"role\": \"ADMIN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/register-first",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"register-first"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Login como Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Login Admin Sucesso\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.accessToken) {",
+									"    pm.environment.set(\"admin_token\", response.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Criar Categoria para Produtos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Categoria Criada\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.categoryId) {",
+									"    pm.environment.set(\"categoria_id\", response.categoryId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Eletrônicos\",\n  \"description\": \"Smartphones, Tablets e Acessórios\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Criar Produtos para Testes",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"sku_produto1\", \"SKU-TEST-1-\" + timestamp);",
+									"pm.environment.set(\"sku_produto2\", \"SKU-TEST-2-\" + timestamp);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Produto Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.productId) {",
+									"    pm.environment.set(\"produto1_id\", response.productId);",
+									"    pm.environment.set(\"produto1_nome\", response.name);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Smartphone Teste\",\n  \"price\": 1999.99,\n  \"categoryId\": \"{{categoria_id}}\",\n  \"description\": \"Smartphone para testes\",\n  \"sku\": \"{{sku_produto1}}\",\n  \"costPrice\": 1500.00,\n  \"stockQuantity\": 50\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Criar Segundo Produto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Segundo Produto Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.productId) {",
+									"    pm.environment.set(\"produto2_id\", response.productId);",
+									"    pm.environment.set(\"produto2_nome\", response.name);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Tablet Teste\",\n  \"price\": 899.99,\n  \"categoryId\": \"{{categoria_id}}\",\n  \"description\": \"Tablet para testes\",\n  \"sku\": \"{{sku_produto2}}\",\n  \"costPrice\": 600.00,\n  \"stockQuantity\": 30\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Criar Usuário Customer",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"customer_email\", \"customer_\" + timestamp + \"@test.com\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Customer Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.userId) {",
+									"    pm.environment.set(\"customer_user_id\", response.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Cliente Teste\",\n  \"email\": \"{{customer_email}}\",\n  \"password\": \"123456\",\n  \"role\": \"CUSTOMER\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7. Login como Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Login Customer Sucesso\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.accessToken) {",
+									"    pm.environment.set(\"customer_token\", response.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{customer_email}}\",\n  \"password\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03. Controle de Estoque (Inventory)",
+			"item": [
+				{
+					"name": "1. Ajuste de Entrada no Estoque (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Entrada de Estoque Processada\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"{{produto1_id}}\",\n  \"quantity\": 10,\n  \"type\": \"ENTRY\",\n  \"description\": \"Compra de fornecedor\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/inventory/adjust",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"adjust"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Ver Histórico de Transações",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Histórico Retornado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"pm.test(\"Retorna array de transações\", function() {",
+									"    pm.expect(response).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/inventory/product/{{produto1_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"product",
+								"{{produto1_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Tentar Saída Maior que Estoque (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 400 - Estoque Insuficiente\", function() {",
+									"    pm.expect(pm.response.code).to.equal(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"{{produto1_id}}\",\n  \"quantity\": 1000,\n  \"type\": \"EXIT\",\n  \"description\": \"Tentativa de venda maior que estoque\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/inventory/adjust",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"adjust"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "04. Carrinho de Compras",
+			"item": [
+				{
+					"name": "1. Ver Carrinho Vazio (Customer)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Carrinho Retornado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"pm.test(\"Carrinho vazio tem 0 itens\", function() {",
+									"    pm.expect(response.items.length).to.equal(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/cart",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Adicionar Item ao Carrinho",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Item Adicionado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"pm.test(\"Carrinho tem 1 item\", function() {",
+									"    pm.expect(response.items.length).to.equal(1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"{{produto1_id}}\",\n  \"quantity\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/cart/add",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cart",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Adicionar Segundo Item",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Segundo Item Adicionado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"pm.test(\"Carrinho tem 2 itens\", function() {",
+									"    pm.expect(response.items.length).to.equal(2);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"{{produto2_id}}\",\n  \"quantity\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/cart/add",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cart",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Tentar Adicionar Mais que Estoque (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 400 - Estoque Insuficiente\", function() {",
+									"    pm.expect(pm.response.code).to.equal(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"{{produto1_id}}\",\n  \"quantity\": 100\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/cart/add",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cart",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Remover Item do Carrinho",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Item Removido\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"pm.test(\"Carrinho tem 1 item após remoção\", function() {",
+									"    pm.expect(response.items.length).to.equal(1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/cart/remove/{{produto2_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cart",
+								"remove",
+								"{{produto2_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "06. Promoções e Cupons",
+			"item": [
+				{
+					"name": "1. Criar Cupom Percentual (Admin)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"cupom_percentual\", \"DESC10-\" + timestamp);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Cupom Percentual Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.id) {",
+									"    pm.environment.set(\"cupom_percentual_id\", response.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"{{cupom_percentual}}\",\n  \"type\": \"PERCENTAGE\",\n  \"value\": 10.00,\n  \"expirationDate\": \"2030-12-31\",\n  \"globalUsageLimit\": 100,\n  \"usageLimitPerUser\": 2,\n  \"minOrderValue\": 50.00\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/coupons",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"coupons"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Criar Cupom Fixo",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"cupom_fixo\", \"FIXO20-\" + timestamp);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Cupom Fixo Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"{{cupom_fixo}}\",\n  \"type\": \"FIXED\",\n  \"value\": 20.00,\n  \"expirationDate\": \"2030-12-31\",\n  \"globalUsageLimit\": 50,\n  \"usageLimitPerUser\": 1,\n  \"minOrderValue\": 100.00\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/coupons",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"coupons"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Criar Cupom Específico para Produto",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"cupom_produto\", \"PRODSPEC-\" + timestamp);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Cupom Específico Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"{{cupom_produto}}\",\n  \"type\": \"PERCENTAGE\",\n  \"value\": 15.00,\n  \"expirationDate\": \"2030-12-31\",\n  \"targetProductId\": \"{{produto1_id}}\",\n  \"minOrderValue\": 0.00\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/coupons",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"coupons"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "05. Pedidos (Orders) - Fluxo Completo",
+			"item": [
+				{
+					"name": "1. Criar Pedido com Cupom (Checkout)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Pedido Criado com Sucesso\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.orderId) {",
+									"    pm.environment.set(\"pedido1_id\", response.orderId);",
+									"}",
+									"pm.test(\"Status do pedido é CREATED ou PAID\", function() {",
+									"    pm.expect(['CREATED', 'PAID']).to.include(response.status);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customerName\": \"Cliente Teste\",\n  \"phoneNumber\": \"11999998888\",\n  \"paymentMethod\": \"PIX\",\n  \"couponCode\": \"{{cupom_percentual}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Verificar Carrinho Limpo Após Checkout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Carrinho Retornado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"pm.test(\"Carrinho está vazio após checkout\", function() {",
+									"    pm.expect(response.items.length).to.equal(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/cart",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Consultar Pedido Criado",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Pedido Encontrado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"pm.test(\"Pedido tem produtos\", function() {",
+									"    pm.expect(response.products.length).to.be.greaterThan(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/orders/{{pedido1_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								"{{pedido1_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Admin Ver Últimos Pedidos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Lista de Pedidos\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"pm.test(\"Retorna array de pedidos\", function() {",
+									"    pm.expect(response).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/orders/latest",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								"latest"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Cancelar Pedido (Customer)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Pedido Cancelado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/orders/{{pedido1_id}}/cancel",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								"{{pedido1_id}}",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Verificar Estoque Estornado Após Cancelamento",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Histórico com Estorno\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"pm.test(\"Tem transação de RETURN\", function() {",
+									"    const hasReturn = response.some(t => t.type === 'RETURN');",
+									"    pm.expect(hasReturn).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/inventory/product/{{produto1_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"product",
+								"{{produto1_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7. Admin Atualizar Status do Pedido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Status Atualizado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"SHIPPED\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders/{{pedido1_id}}/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								"{{pedido1_id}}",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "07. Testes de Validação e Regras",
+			"item": [
+				{
+					"name": "1. Tentar Usar Cupom Expirado (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"cupom_expirado\", \"EXPIRADO-\" + timestamp);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Cupom Expirado Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"{{cupom_expirado}}\",\n  \"type\": \"PERCENTAGE\",\n  \"value\": 10.00,\n  \"expirationDate\": \"2020-01-01\",\n  \"minOrderValue\": 0.00\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/coupons",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"coupons"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Tentar Cancelar Pedido SHIPPED (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 400 - Não Pode Cancelar Pedido Enviado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/orders/{{pedido1_id}}/cancel",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								"{{pedido1_id}}",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Tentar Pedido com Carrinho Vazio (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 400 - Carrinho Vazio\", function() {",
+									"    pm.expect(pm.response.code).to.equal(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"paymentMethod\": \"PIX\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "customer_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "categoria_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "produto1_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "produto2_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "pedido1_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "cupom_percentual",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

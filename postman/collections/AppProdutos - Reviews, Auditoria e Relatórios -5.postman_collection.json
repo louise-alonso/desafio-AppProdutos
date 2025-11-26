@@ -1,0 +1,1111 @@
+{
+	"info": {
+		"_postman_id": "279574c7-f503-4b9e-aba3-5a9d45527c95",
+		"name": "AppProdutos - Reviews, Auditoria e Relatórios -5",
+		"description": "Testes do sistema de avaliações, logs de auditoria e relatórios gerenciais - VERSÃO CORRIGIDA",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45343177",
+		"_collection_link": "https://projeto-appproducts.postman.co/workspace/AppProducts~27ec442f-8fb9-4a8f-90b6-38f4b0d01d93/collection/45343177-279574c7-f503-4b9e-aba3-5a9d45527c95?action=share&source=collection_link&creator=45343177"
+	},
+	"item": [
+		{
+			"name": "00. Setup Inicial",
+			"item": [
+				{
+					"name": "1. Criar Primeiro Admin",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"admin_email\", \"admin_\" + timestamp + \"@test.com\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Primeiro Admin Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Admin Reviews\",\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"123456\",\n  \"role\": \"ADMIN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/register-first",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"register-first"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Login como Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Login Admin Sucesso\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.accessToken) {",
+									"    pm.environment.set(\"admin_token\", response.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Criar Customer para Reviews",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"customer_review_email\", \"customer_review_\" + timestamp + \"@test.com\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Customer Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Cliente Review\",\n  \"email\": \"{{customer_review_email}}\",\n  \"password\": \"123456\",\n  \"role\": \"CUSTOMER\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Login como Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Login Customer Sucesso\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.accessToken) {",
+									"    pm.environment.set(\"customer_review_token\", response.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{customer_review_email}}\",\n  \"password\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Criar Categoria e Produtos para Testes",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"produto_review_sku\", \"SKU-REVIEW-\" + timestamp);",
+									"pm.environment.set(\"produto_review2_sku\", \"SKU-REVIEW2-\" + timestamp);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Categoria Criada\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.categoryId) {",
+									"    pm.environment.set(\"categoria_review_id\", response.categoryId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Produtos para Review\",\n  \"description\": \"Categoria para testes de avaliação\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Criar Produto 1 para Reviews",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Produto 1 Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.productId) {",
+									"    pm.environment.set(\"produto_review1_id\", response.productId);",
+									"    pm.environment.set(\"produto_review1_name\", response.name);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Smartphone para Review\",\n  \"price\": 1200.00,\n  \"categoryId\": \"{{categoria_review_id}}\",\n  \"description\": \"Produto para testes de avaliação\",\n  \"sku\": \"{{produto_review_sku}}\",\n  \"costPrice\": 800.00,\n  \"stockQuantity\": 20\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7. Criar Produto 2 para Reviews",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Produto 2 Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.productId) {",
+									"    pm.environment.set(\"produto_review2_id\", response.productId);",
+									"    pm.environment.set(\"produto_review2_name\", response.name);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Tablet para Review\",\n  \"price\": 800.00,\n  \"categoryId\": \"{{categoria_review_id}}\",\n  \"description\": \"Segundo produto para testes\",\n  \"sku\": \"{{produto_review2_sku}}\",\n  \"costPrice\": 500.00,\n  \"stockQuantity\": 15\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"products"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "01. Reviews e Avaliações - Testes de Regras (CORRIGIDOS)",
+			"item": [
+				{
+					"name": "1. Customer Tenta Avaliar Sem Comprar (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 400/403/500 - NÃO PODE Avaliar Sem Comprar\", function() {",
+									"    pm.expect(pm.response.code).to.be.oneOf([400, 403, 422, 500]);",
+									"});",
+									"",
+									"console.log(\"Status:\", pm.response.code);",
+									"console.log(\"Error:\", pm.response.text());"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_review_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"{{produto_review1_id}}\",\n  \"orderId\": \"pedido-inexistente\",\n  \"rating\": 5,\n  \"comment\": \"Produto excelente!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/reviews",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reviews"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Customer Faz Compra para Poder Avaliar",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log(\"Adicionando produto ao carrinho para compra...\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Item Adicionado ao Carrinho\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_review_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"{{produto_review1_id}}\",\n  \"quantity\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/cart/add",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cart",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Customer Faz Pedido (Checkout)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Pedido Criado com Sucesso\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.orderId) {",
+									"    pm.environment.set(\"pedido_review_id\", response.orderId);",
+									"    pm.environment.set(\"pedido_status\", response.status);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_review_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customerName\": \"Cliente Review\",\n  \"phoneNumber\": \"11999997777\",\n  \"paymentMethod\": \"PIX\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Admin Atualiza Status do Pedido para PAID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Status do Pedido Atualizado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"PAID\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders/{{pedido_review_id}}/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								"{{pedido_review_id}}",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Customer PODE Avaliar Produto Comprado (DEVE FUNCIONAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Avaliação Criada com Sucesso\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.id) {",
+									"    pm.environment.set(\"review1_id\", response.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_review_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"{{produto_review1_id}}\",\n  \"orderId\": \"{{pedido_review_id}}\",\n  \"rating\": 5,\n  \"comment\": \"Produto excelente! Entrega rápida e qualidade superior.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/reviews",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reviews"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Customer Tenta Avaliar Mesmo Produto Novamente (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 400/409 - NÃO PODE Avaliar Mesmo Produto Duas Vezes\", function() {",
+									"    pm.expect(pm.response.code).to.be.oneOf([400, 409, 422]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_review_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"{{produto_review1_id}}\",\n  \"orderId\": \"{{pedido_review_id}}\",\n  \"rating\": 4,\n  \"comment\": \"Tentativa de segunda avaliação\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/reviews",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reviews"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7. Verificar Média do Produto Atualizada",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Produto Encontrado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"pm.test(\"Produto tem informações de rating\", function() {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('averageRating');",
+									"    pm.expect(response).to.have.property('reviewCount');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/products/{{produto_review1_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								"{{produto_review1_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8. Listar Reviews do Produto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Reviews Listados\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"pm.test(\"Contém avaliações\", function() {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.be.an('array');",
+									"    pm.expect(response.length).to.be.greaterThan(0);",
+									"    const firstReview = response[0];",
+									"    pm.expect(firstReview).to.have.property('rating');",
+									"    pm.expect(firstReview.rating).to.be.within(1, 5);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/reviews/product/{{produto_review1_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reviews",
+								"product",
+								"{{produto_review1_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02. Auditoria (Audit Log) - Testes",
+			"item": [
+				{
+					"name": "1. Admin PODE Ver Logs de Auditoria",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Logs de Auditoria Acessíveis\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"pm.test(\"Logs retornam como array\", function() {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/audit",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"audit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Admin PODE Filtrar Logs por Entidade",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Logs Filtrados por Produto\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/audit?entityType=PRODUCT&entityId={{produto_review1_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"audit"
+							],
+							"query": [
+								{
+									"key": "entityType",
+									"value": "PRODUCT"
+								},
+								{
+									"key": "entityId",
+									"value": "{{produto_review1_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Customer NÃO PODE Ver Logs de Auditoria",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 403 - Customer NÃO PODE Ver Auditoria\", function() {",
+									"    pm.expect(pm.response.code).to.equal(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_review_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/audit",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"audit"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03. Relatórios Gerenciais - Testes",
+			"item": [
+				{
+					"name": "1. Admin PODE Ver Relatório de Vendas",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Relatório de Vendas Acessível\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"pm.test(\"Relatório contém dados\", function() {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reports/sales?startDate=2024-01-01&endDate=2024-12-31",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports",
+								"sales"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-12-31"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Admin PODE Ver Top Produtos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Top Produtos Acessível\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"pm.test(\"Lista de produtos retornada\", function() {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reports/top-products?limit=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports",
+								"top-products"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Admin PODE Ver Estoque Crítico",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Estoque Crítico Acessível\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"pm.test(\"Lista de produtos com estoque baixo\", function() {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reports/low-stock",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports",
+								"low-stock"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Customer NÃO PODE Ver Relatórios",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 403 - Customer NÃO PODE Ver Relatórios\", function() {",
+									"    pm.expect(pm.response.code).to.equal(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_review_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reports/sales",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports",
+								"sales"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "customer_review_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "categoria_review_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "produto_review1_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "produto_review2_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "pedido_review_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "review1_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

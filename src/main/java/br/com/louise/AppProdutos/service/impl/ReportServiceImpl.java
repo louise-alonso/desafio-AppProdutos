@@ -27,6 +27,10 @@ public class ReportServiceImpl implements ReportService {
         return orderRepository.getSalesReport(start.atStartOfDay(), end.atTime(23, 59, 59));
     }
 
+    public List<ProductEntity> getLowStockProducts(int threshold) {
+        return productRepository.findByStockQuantityLessThanAndActiveTrue(threshold);
+    }
+
     @Override
     public List<DTOTopProduct> getTopSellingProducts() {
         return orderItemRepository.findTopSellingProducts().stream()

@@ -1,0 +1,1329 @@
+{
+	"info": {
+		"_postman_id": "3f6029dd-644d-49d0-b7cc-2867317f4848",
+		"name": "AppProdutos - Testes Negativos (Permissões) -4",
+		"description": "Testes de cenários negativos onde usuários tentam acessar recursos sem permissão",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45343177",
+		"_collection_link": "https://projeto-appproducts.postman.co/workspace/AppProducts~27ec442f-8fb9-4a8f-90b6-38f4b0d01d93/collection/45343177-3f6029dd-644d-49d0-b7cc-2867317f4848?action=share&source=collection_link&creator=45343177"
+	},
+	"item": [
+		{
+			"name": "00. Setup Inicial",
+			"item": [
+				{
+					"name": "1. Criar Primeiro Admin",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"admin_email\", \"admin_\" + timestamp + \"@test.com\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Primeiro Admin Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.userId) {",
+									"    pm.environment.set(\"admin_user_id\", response.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Admin Principal\",\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"123456\",\n  \"role\": \"ADMIN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/register-first",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"register-first"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Login como Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Login Admin Sucesso\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.accessToken) {",
+									"    pm.environment.set(\"admin_token\", response.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Criar Seller para Testes",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"seller_email\", \"seller_\" + timestamp + \"@test.com\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Seller Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.userId) {",
+									"    pm.environment.set(\"seller_user_id\", response.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Vendedor Teste\",\n  \"email\": \"{{seller_email}}\",\n  \"password\": \"123456\",\n  \"role\": \"SELLER\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Login como Seller",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Login Seller Sucesso\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.accessToken) {",
+									"    pm.environment.set(\"seller_token\", response.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{seller_email}}\",\n  \"password\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Criar Usuário Customer",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"customer_email\", \"customer_\" + timestamp + \"@test.com\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Customer Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.userId) {",
+									"    pm.environment.set(\"customer_user_id\", response.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Cliente Teste\",\n  \"email\": \"{{customer_email}}\",\n  \"password\": \"123456\",\n  \"role\": \"CUSTOMER\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Login como Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Login Customer Sucesso\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.accessToken) {",
+									"    pm.environment.set(\"customer_token\", response.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{customer_email}}\",\n  \"password\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7. Criar Categoria e Produtos (Admin)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"sku_admin\", \"SKU-ADMIN-\" + timestamp);",
+									"pm.environment.set(\"sku_seller\", \"SKU-SELLER-\" + timestamp);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Categoria Criada\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.categoryId) {",
+									"    pm.environment.set(\"categoria_id\", response.categoryId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Eletrônicos Teste\",\n  \"description\": \"Categoria para testes\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8. Criar Produto como Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Produto Admin Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.productId) {",
+									"    pm.environment.set(\"produto_admin_id\", response.productId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Produto do Admin\",\n  \"price\": 999.99,\n  \"categoryId\": \"{{categoria_id}}\",\n  \"description\": \"Produto criado pelo ADMIN\",\n  \"sku\": \"{{sku_admin}}\",\n  \"costPrice\": 700.00,\n  \"stockQuantity\": 50\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "9. Criar Produto como Seller",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Produto Seller Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.productId) {",
+									"    pm.environment.set(\"produto_seller_id\", response.productId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Produto do Seller\",\n  \"price\": 499.99,\n  \"categoryId\": \"{{categoria_id}}\",\n  \"description\": \"Produto criado pelo SELLER\",\n  \"sku\": \"{{sku_seller}}\",\n  \"costPrice\": 300.00,\n  \"stockQuantity\": 25\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"products"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "01. Testes Negativos - CUSTOMER Tentando Ações Proibidas",
+			"item": [
+				{
+					"name": "1. Customer Tentar Criar Produto (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 403 - Customer NÃO PODE Criar Produto\", function() {",
+									"    pm.expect(pm.response.code).to.equal(403);",
+									"});",
+									"pm.test(\"Mensagem de acesso negado\", function() {",
+									"    const response = pm.response.json();",
+									"    const errorMsg = response.message || response.error || JSON.stringify(response);",
+									"    pm.expect(errorMsg.toLowerCase()).to.include.oneOf(['acesso negado', 'access denied', 'forbidden', 'permissão', 'permission']);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Produto do Customer\",\n  \"price\": 100.00,\n  \"categoryId\": \"{{categoria_id}}\",\n  \"description\": \"Tentativa de criar produto\",\n  \"sku\": \"SKU-CUSTOMER-TEST\",\n  \"stockQuantity\": 10\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Customer Tentar Ajustar Estoque (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 403 - Customer NÃO PODE Ajustar Estoque\", function() {",
+									"    pm.expect(pm.response.code).to.equal(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"{{produto_admin_id}}\",\n  \"quantity\": 5,\n  \"type\": \"ENTRY\",\n  \"description\": \"Tentativa de ajuste\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/inventory/adjust",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"adjust"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Customer Tentar Ver Histórico de Estoque (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 403 - Customer NÃO PODE Ver Histórico\", function() {",
+									"    pm.expect(pm.response.code).to.equal(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/inventory/product/{{produto_admin_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"product",
+								"{{produto_admin_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Customer Tentar Criar Cupom (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 403 - Customer NÃO PODE Criar Cupom\", function() {",
+									"    pm.expect(pm.response.code).to.equal(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"CUSTOMER10\",\n  \"type\": \"PERCENTAGE\",\n  \"value\": 10.00,\n  \"expirationDate\": \"2030-12-31\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/coupons",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"coupons"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Customer Tentar Ver Últimos Pedidos (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 403 - Customer NÃO PODE Ver Todos Pedidos\", function() {",
+									"    pm.expect(pm.response.code).to.equal(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/orders/latest",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								"latest"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Customer Tentar Atualizar Status de Pedido (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 403 - Customer NÃO PODE Atualizar Status\", function() {",
+									"    pm.expect(pm.response.code).to.equal(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"SHIPPED\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders/123/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								"123",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02. Testes Negativos - SELLER Tentando Ações Proibidas",
+			"item": [
+				{
+					"name": "1. Seller Tentar Criar Cupom (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 403 - Seller NÃO PODE Criar Cupom\", function() {",
+									"    pm.expect(pm.response.code).to.equal(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"SELLER10\",\n  \"type\": \"PERCENTAGE\",\n  \"value\": 10.00,\n  \"expirationDate\": \"2030-12-31\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/coupons",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"coupons"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Seller Tentar Ajustar Estoque de Produto do Admin (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 403 - Seller NÃO PODE Alterar Produto do Admin\", function() {",
+									"    pm.expect(pm.response.code).to.equal(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"{{produto_admin_id}}\",\n  \"quantity\": 5,\n  \"type\": \"ENTRY\",\n  \"description\": \"Tentativa de ajuste no produto do admin\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/inventory/adjust",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"adjust"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Seller Tentar Ver Histórico de Produto do Admin (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 403 - Seller NÃO PODE Ver Histórico de Produto do Admin\", function() {",
+									"    pm.expect(pm.response.code).to.equal(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/inventory/product/{{produto_admin_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"product",
+								"{{produto_admin_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Seller Tentar Ver Últimos Pedidos (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 403 - Seller NÃO PODE Ver Todos Pedidos\", function() {",
+									"    pm.expect(pm.response.code).to.equal(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/orders/latest",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								"latest"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Seller Tentar Atualizar Status de Pedido (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 403 - Seller NÃO PODE Atualizar Status\", function() {",
+									"    pm.expect(pm.response.code).to.equal(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"SHIPPED\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders/123/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								"123",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Seller Tentar Editar Produto do Admin (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 403 - Seller NÃO PODE Editar Produto do Admin\", function() {",
+									"    pm.expect(pm.response.code).to.be.oneOf([403, 400]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Produto Editado por Seller\",\n  \"price\": 888.88,\n  \"categoryId\": \"{{categoria_id}}\",\n  \"description\": \"Tentativa de edição\",\n  \"sku\": \"{{sku_admin}}\",\n  \"stockQuantity\": 60\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/products/{{produto_admin_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"products",
+								"{{produto_admin_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03. Testes Positivos - Verificando que Permissões Funcionam",
+			"item": [
+				{
+					"name": "1. Seller PODE Ajustar Estoque do SEU Produto (DEVE FUNCIONAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Seller PODE Ajustar Próprio Produto\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"{{produto_seller_id}}\",\n  \"quantity\": 5,\n  \"type\": \"ENTRY\",\n  \"description\": \"Reposição de estoque\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/inventory/adjust",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"adjust"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Seller PODE Ver Histórico do SEU Produto (DEVE FUNCIONAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Seller PODE Ver Histórico do Próprio Produto\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/inventory/product/{{produto_seller_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"product",
+								"{{produto_seller_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Customer Adiciona Item ao Carrinho Antes do Pedido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Item Adicionado ao Carrinho\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"{{produto_seller_id}}\",\n  \"quantity\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/cart/add",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cart",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Customer PODE Fazer Pedido (DEVE FUNCIONAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Customer PODE Fazer Pedido\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.orderId) {",
+									"    pm.environment.set(\"pedido_customer_id\", response.orderId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customerName\": \"Cliente Teste\",\n  \"phoneNumber\": \"11999998888\",\n  \"paymentMethod\": \"PIX\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Customer PODE Fazer Pedido (DEVE FUNCIONAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Customer PODE Fazer Pedido\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.orderId) {",
+									"    pm.environment.set(\"pedido_customer_id\", response.orderId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customerName\": \"Cliente Teste\",\n  \"phoneNumber\": \"11999998888\",\n  \"paymentMethod\": \"PIX\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Customer PODE Ver SEU Próprio Pedido (DEVE FUNCIONAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Customer PODE Ver Próprio Pedido\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/orders/{{pedido_customer_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								"{{pedido_customer_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "seller_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "customer_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "categoria_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "produto_admin_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "produto_seller_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "pedido_customer_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

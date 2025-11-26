@@ -11,7 +11,7 @@
 
 API RESTful completa para gerenciamento de um sistema de E-commerce. O projeto foi desenvolvido com foco em **boas práticas, arquitetura limpa, segurança robusta e cobertura de testes**, atendendo a um conjunto rigoroso de regras de negócio.
 
-##  Funcionalidades e Regras de Negócio
+## Funcionalidades e Regras de Negócio
 
 O sistema implementa todas as regras de negócio propostas, garantindo consistência e segurança nas operações.
 
@@ -27,7 +27,7 @@ O sistema implementa todas as regras de negócio propostas, garantindo consistê
 * **Hierarquia:** Suporte a categorias com estrutura de árvore (Pai → Filho).
 * **Unicidade:** O nome da categoria é único no sistema para evitar duplicidade.
 * **Vínculo:** Todo produto deve obrigatoriamente pertencer a uma categoria existente.
-* * **Integridade de Deleção:** Para preservar o histórico e consistência, **não é permitido deletar uma Categoria** se ela possuir produtos vinculados ou subcategorias filhas. É necessário esvaziá-la antes.
+* **Integridade de Deleção:** Para preservar o histórico e consistência, **não é permitido deletar uma Categoria** se ela possuir produtos vinculados ou subcategorias filhas. É necessário esvaziá-la antes.
 
 ### 3. Controle de Estoque (Inventário)
 * **Auditoria de Movimentação:** Cada alteração de saldo gera um registro imutável em `InventoryTransaction` com tipo (ENTRADA, SAÍDA, AJUSTE, DEVOLUÇÃO) e responsável.
@@ -94,7 +94,7 @@ Abaixo, o resumo do que foi desenvolvido com base nos requisitos solicitados.
 | *Multi-seller*                  | ✅ Feito | Desafio Bônus                                            |
 
 ---
-## 🐳 Infraestrutura e Desafio Bônus (Redis)
+## Infraestrutura e Desafio Bônus (Redis)
 
 Embora a aplicação principal e o banco de dados (H2) rodem na JVM localmente, utilizamos o **Docker Compose** para atender ao **requisito bônus de performance (Caching)**.
 
@@ -107,81 +107,109 @@ O Docker é utilizado neste projeto exclusivamente para subir o container do **R
 
 ---
 
-## 🚀 Como Rodar o Projeto
+## ## Como Rodar o Projeto
 
 ### Pré-requisitos
-* Java 21 e Maven instalados.
-* Docker Desktop instalado (para o Redis).
+- Java 21
+- Maven
+- Docker Desktop
 
-### Passos
-1.  **Clone o repositório:**
+### Passo a Passo
+
     ```bash
-    git clone [https://github.com/seu-usuario/AppProdutos.git](https://github.com/seu-usuario/AppProdutos.git)
+    git clone https://github.com/seu-usuario/AppProdutos.git
+
     cd AppProdutos
-    ```
 
-2.  **Execute a aplicação:**
-    ABRA O DOCKER DESKTOP
-    ```bash
-    cd .\src\main\java\br\com\louise\AppProdutos\
-    ```
-
-    ```bash
     docker-compose up -d
+
+    mvn spring-boot:run
     ```
-Isso iniciará o Redis na porta 6379 e o Redis Commander na porta 8081.    
 
-Com o Redis ativo, inicie a aplicação Spring Boot clicendo em application.properties
-
-    
-
-
-
-## Passo 3: Acessar
+## Acesso aos Serviços
 
 Swagger (API): http://localhost:8080/swagger-ui.html  
 H2 Console (Banco): http://localhost:8080/h2-console  
 Redis Commander (Cache Visual): http://localhost:8081
 
-## Como Testar o Bônus (Redis Caching)
+### Configuração de E-mail (Opcional)
+    ```bash
+    mvn spring-boot:run -Dspring-boot.run.arguments="--spring.mail.username=SEU_USER --spring.mail.password=SUA_SENHA"
+    ```
 
-Para verificar se o Caching com Redis está funcionando corretamente:
+## Testes com Postman
 
-### Abra o Console da Aplicação
-Fique de olho no terminal onde o Java está rodando.
+As collections estão na pasta postman/collections/
 
-### Faça a Primeira Requisição (Cache Miss)
-Vá no Swagger e execute GET /products.
+### 1. **AppProdutos - Testes Negativos (Permissões).postman_collection.json**
+- Testes de autorização e permissões
+- Garante que usuários não acessem recursos proibidos
 
-Resultado:  
-Você verá no log uma consulta SQL (Hibernate: select ...) buscando no H2.
+### 2. **AppProdutos - Reviews, Auditoria e Relatórios (CORRIGIDA).postman_collection.json**
+- Testes do sistema de avaliações
+- Logs de auditoria
+- Relatórios gerenciais
 
-### Faça a Segunda Requisição (Cache Hit)
-Execute GET /products novamente.
+---
 
-Resultado:  
-Não haverá consulta SQL no log.  
-O tempo de resposta será muito mais rápido (dado vindo do Redis).
+## ⚠️ IMPORTANTE — Instruções de Teste
+
+**REINICIE A APLICAÇÃO ENTRE COLLECTIONS!**
+
+    ```bash
+    # Entre collections:
+    Ctrl+C
+    mvn spring-boot:run
+    ```
+
+### Por que reiniciar?
+- Evita conflitos por dados compartilhados
+- Evita reutilização incorreta de IDs
+- Evita que o estado do banco altere o resultado dos testes
+- Garante ambiente limpo para cada execution
+
+### Ordem Recomendada:
+1. Reinicie a aplicação
+2. Execute **Testes Negativos (Permissões)**
+3. Reinicie a aplicação
+4. Execute **Reviews, Auditoria e Relatórios**
+---
+
+## ⚠️ IMPORTANTE — Instruções de Teste
+
+### **REINICIE A APLICAÇÃO ENTRE COLLECTIONS!**
+
+Devido ao compartilhamento de dados entre testes, é **CRÍTICO** reiniciar a aplicação:
+
+    ```bash
+    # Entre collections, pare e reinicie:
+    Ctrl+C
+    mvn spring-boot:run
+    ```
+
+### Por que reiniciar?
+
+- Dados compartilhados entre collections podem causar conflitos
+- IDs únicos podem ser reutilizados incorretamente
+- Estado do banco pode afetar testes subsequentes
+- Garante que cada collection rode em ambiente limpo
+
+### Ordem Recomendada de Execução:
+
+1. Reinicie aplicação
+2. Execute **Testes Negativos (Permissões)**
+3. Reinicie aplicação
+4. Execute **Reviews, Auditoria e Relatórios**
 
 
+## Testes Automatizados
 
-##  Testes Automatizados
-
-O projeto conta com uma suíte robusta de testes cobrindo Controllers, Services e Repositories, garantindo que todas as regras de negócio acima estejam funcionando.
+O projeto conta com uma suíte robusta de testes cobrindo **Controllers**, **Services** e **Repositories**, garantindo que todas as regras de negócio acima estejam funcionando.
 
 **Para detalhes técnicos sobre a estratégia de testes e mapa de endpoints, consulte o arquivo [TESTING.md](TESTING.md).**
 
+
 Para rodar os testes:
-```bash
-mvn test
-
-## Configuração de E-mail (Opcional)
-
-Para testar o envio de notificações (Scheduler de estoque baixo), o projeto utiliza o **Mailtrap** (servidor SMTP fake).
-
-1. Crie uma conta gratuita em [Mailtrap.io](https://mailtrap.io/).
-2. No painel, vá em **Inboxes** > **SMTP Settings**.
-3. Configure as variáveis no `application.properties` ou passe como argumentos ao rodar a aplicação:
-
-```bash
-mvn spring-boot:run -Dspring-boot.run.arguments="--spring.mail.username=SEU_USER --spring.mail.password=SUA_SENHA"
+    ```bash
+    mvn test
+    ```

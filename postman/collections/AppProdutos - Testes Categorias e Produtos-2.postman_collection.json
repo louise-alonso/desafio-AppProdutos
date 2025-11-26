@@ -1,0 +1,925 @@
+{
+	"info": {
+		"_postman_id": "10ec9ef6-6c4b-4ba6-8eaf-3c55c5fa0a5a",
+		"name": "AppProdutos - Testes Categorias e Produtos-2",
+		"description": "Testes completos de categorias, produtos e permissões",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45343177",
+		"_collection_link": "https://projeto-appproducts.postman.co/workspace/AppProducts~27ec442f-8fb9-4a8f-90b6-38f4b0d01d93/collection/45343177-10ec9ef6-6c4b-4ba6-8eaf-3c55c5fa0a5a?action=share&source=collection_link&creator=45343177"
+	},
+	"item": [
+		{
+			"name": "00. Setup Inicial - Criar Usuários",
+			"item": [
+				{
+					"name": "1. Criar Primeiro Admin",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"admin_email\", \"admin_\" + timestamp + \"@test.com\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Primeiro Admin Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.userId) {",
+									"    pm.environment.set(\"admin_user_id\", response.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Admin Principal\",\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"123456\",\n  \"role\": \"ADMIN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/register-first",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"register-first"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Login como Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Login Admin Sucesso\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.accessToken) {",
+									"    pm.environment.set(\"admin_token\", response.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Criar Seller para Testes",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"seller_email\", \"seller_\" + timestamp + \"@test.com\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Seller Criado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.userId) {",
+									"    pm.environment.set(\"seller_user_id\", response.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Vendedor Teste\",\n  \"email\": \"{{seller_email}}\",\n  \"password\": \"123456\",\n  \"role\": \"SELLER\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Login como Seller",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Login Seller Sucesso\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.accessToken) {",
+									"    pm.environment.set(\"seller_token\", response.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{seller_email}}\",\n  \"password\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "01. Testes de Categorias",
+			"item": [
+				{
+					"name": "1. Criar Categoria Pai (Eletrônicos)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Categoria Criada\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.categoryId) {",
+									"    pm.environment.set(\"categoria_pai_id\", response.categoryId);",
+									"    pm.environment.set(\"categoria_pai_nome\", response.name);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Eletrônicos\",\n  \"description\": \"Smartphones, Tablets e Acessórios\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Criar Subcategoria (Smartphones)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Subcategoria Criada\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.categoryId) {",
+									"    pm.environment.set(\"subcategoria_id\", response.categoryId);",
+									"    pm.environment.set(\"subcategoria_nome\", response.name);",
+									"}",
+									"pm.test(\"Tem categoria pai\", function() {",
+									"    pm.expect(response.parentName).to.equal(pm.environment.get(\"categoria_pai_nome\"));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Smartphones\",\n  \"description\": \"Telefones inteligentes\",\n  \"parentId\": \"{{categoria_pai_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Listar Categorias (Público)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Lista Categorias\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"pm.test(\"Retorna array de categorias\", function() {",
+									"    pm.expect(response).to.be.an('array');",
+									"    pm.expect(response.length).to.be.greaterThan(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Buscar Categoria por ID (Público)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Categoria Encontrada\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"pm.test(\"Nome correto\", function() {",
+									"    pm.expect(response.name).to.equal(pm.environment.get(\"categoria_pai_nome\"));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/categories/{{categoria_pai_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categories",
+								"{{categoria_pai_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Atualizar Categoria",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Categoria Atualizada\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"pm.test(\"Descrição atualizada\", function() {",
+									"    pm.expect(response.description).to.equal(\"Eletrônicos e Gadgets\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Eletrônicos\",\n  \"description\": \"Eletrônicos e Gadgets\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/categories/{{categoria_pai_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categories",
+								"{{categoria_pai_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02. Testes de Produtos",
+			"item": [
+				{
+					"name": "1. Criar Produto (como Admin)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"sku_admin\", \"SKU-ADMIN-\" + timestamp);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Produto Criado por Admin\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.productId) {",
+									"    pm.environment.set(\"produto_admin_id\", response.productId);",
+									"    pm.environment.set(\"produto_admin_nome\", response.name);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"iPhone 15 Pro\",\n  \"price\": 8999.99,\n  \"categoryId\": \"{{subcategoria_id}}\",\n  \"description\": \"256GB, Titânio, 5G\",\n  \"sku\": \"{{sku_admin}}\",\n  \"costPrice\": 6500.00,\n  \"stockQuantity\": 25\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Criar Produto (como Seller)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"pm.environment.set(\"sku_seller\", \"SKU-SELLER-\" + timestamp);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201 - Produto Criado por Seller\", function() {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"const response = pm.response.json();",
+									"if (response.productId) {",
+									"    pm.environment.set(\"produto_seller_id\", response.productId);",
+									"    pm.environment.set(\"produto_seller_nome\", response.name);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Samsung Galaxy S24\",\n  \"price\": 4599.99,\n  \"categoryId\": \"{{subcategoria_id}}\",\n  \"description\": \"128GB, Preto, 5G\",\n  \"sku\": \"{{sku_seller}}\",\n  \"costPrice\": 3200.00,\n  \"stockQuantity\": 15\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Listar Produtos (Público)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Lista Produtos\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"pm.test(\"Retorna array de produtos\", function() {",
+									"    pm.expect(response).to.be.an('array');",
+									"    pm.expect(response.length).to.be.greaterThan(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Buscar Produto por ID (Público)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Produto Encontrado\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"pm.test(\"Nome correto\", function() {",
+									"    pm.expect(response.name).to.equal(pm.environment.get(\"produto_admin_nome\"));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/products/{{produto_admin_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								"{{produto_admin_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03. Testes de Permissões e Regras",
+			"item": [
+				{
+					"name": "1. Seller Tentar Atualizar Produto do Admin (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 403 ou 400 - Seller NÃO PODE Editar Produto do Admin\", function() {",
+									"    pm.expect(pm.response.code).to.be.oneOf([403, 400]);",
+									"});",
+									"pm.test(\"Mensagem de erro apropriada\", function() {",
+									"    if (pm.response.code !== 200) {",
+									"        const response = pm.response.json();",
+									"        const errorMsg = response.message || response.error || JSON.stringify(response);",
+									"        pm.expect(errorMsg).to.include.oneOf([",
+									"            'Você só pode alterar seus próprios produtos',",
+									"            'acesso negado', 'permissão', 'permission', 'proprietário', 'owner', 'seller', 'SELLER',",
+									"            'alterar', 'próprios', 'produtos'",
+									"        ]);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"iPhone 15 Pro MAX\",\n  \"price\": 9999.99,\n  \"categoryId\": \"{{subcategoria_id}}\",\n  \"description\": \"512GB, Titânio, 5G\",\n  \"sku\": \"{{sku_admin}}\",\n  \"costPrice\": 7500.00,\n  \"stockQuantity\": 30\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/products/{{produto_admin_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"products",
+								"{{produto_admin_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Seller Atualizar SEU Próprio Produto (DEVE FUNCIONAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Seller PODE Editar Seu Próprio Produto\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"pm.test(\"Preço atualizado\", function() {",
+									"    pm.expect(response.price).to.equal(4399.99);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Samsung Galaxy S24\",\n  \"price\": 4399.99,\n  \"categoryId\": \"{{subcategoria_id}}\",\n  \"description\": \"128GB, Preto, 5G - PROMOÇÃO\",\n  \"sku\": \"{{sku_seller}}\",\n  \"costPrice\": 3200.00,\n  \"stockQuantity\": 15\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/products/{{produto_seller_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"products",
+								"{{produto_seller_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Admin Atualizar Qualquer Produto (DEVE FUNCIONAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Admin PODE Editar Qualquer Produto\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Samsung Galaxy S24 ULTRA\",\n  \"price\": 4799.99,\n  \"categoryId\": \"{{subcategoria_id}}\",\n  \"description\": \"256GB, Preto, 5G - Edição Especial\",\n  \"sku\": \"{{sku_seller}}\",\n  \"costPrice\": 3500.00,\n  \"stockQuantity\": 20\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/products/{{produto_seller_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"products",
+								"{{produto_seller_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Tentar Deletar Categoria com Produtos (DEVE FALHAR)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 400 - NÃO PODE Deletar Categoria com Produtos\", function() {",
+									"    pm.expect(pm.response.code).to.be.oneOf([400, 409]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/categories/{{subcategoria_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categories",
+								"{{subcategoria_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Verificar Auditoria (Logs de Produtos)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200 - Admin PODE Ver Auditoria\", function() {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"const response = pm.response.json();",
+									"pm.test(\"Retorna logs de auditoria\", function() {",
+									"    pm.expect(response).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/audit?entity=Product",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"audit"
+							],
+							"query": [
+								{
+									"key": "entity",
+									"value": "Product"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "seller_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "categoria_pai_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "subcategoria_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "produto_admin_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "produto_seller_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

@@ -23,4 +23,8 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 
     // Busca produtos com estoque menor que X
     List<ProductEntity> findByStockQuantityLessThan(Integer minStock);
+
+    long countByActiveTrue();
+
+    List<ProductEntity> findByStockQuantityLessThanAndActiveTrue(int stockQuantity);
 }
